@@ -1,9 +1,13 @@
 
-def parse_card(filename):
+def parse_card(filename, description=""):
         from lxml import etree
         import base64
 
-        card = {'filename':filename}
+        card = {'filename':filename, 'description':description}
+
+        import time
+        ts = time.gmtime()
+        card['change-time'] = time.strftime("%Y-%m-%d-%H%M%S", ts)
 
         tree = etree.parse("card.xml")
 
@@ -34,10 +38,14 @@ def parse_card(filename):
 def print_card(card):
     import binascii as ba
     print("card <%s> id: %s (%s)"% (card['filename'], ba.hexlify(card['tagid']), card['application-type']))
+    print("\tdescription:      %s"%card['description'])
+    print("\tchange-time:      %s"%card['change-time'])
     print("\tapplication-data: %s"% ba.hexlify(card['application-data']))
     files = card['files']
-    for f in files.keys():
-        print("\t %s" % f)
+    filelist = files.keys()
+    filelist.sort()
+    for f in filelist:
+        print("\t%s" % f)
         for r in files[f]:
             print ("\t\t%s"%ba.hexlify(r))
     
