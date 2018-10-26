@@ -54,12 +54,33 @@ def format_card(card):
 def print_card(card):
     print(format_card(card))
 
+def store_card(card):
+    #store the card in txt and json
+    import binascii as ba
+    basename = "%s-%s"%(ba.hexlify(card['tagid']),card['change-time'])
+    with open(basename+".txt",'w') as file:
+        file.write(format_card(card))
+    import json
+    copy = card;
+    copy['tagid'] = ba.hexlify(card['tagid'])
+    copy['application-data'] = ba.hexlify(card['application-data'])
+    for f in card['files'].keys():
+        tmp = copy['files'][f]
+        copy['files'][f] = []
+        for r in tmp:
+            copy['files'][f].append(ba.hexlify(r))
+    with open(basename+".json",'w') as file:
+        file.write(json.dumps(copy,indent=4))
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('filename')
     args = parser.parse_args()
     description = raw_input("Change description: ")
+
     mycard = parse_card(args.filename,description) 
     print_card(mycard)
+    
+    store_card(mycard)
 
