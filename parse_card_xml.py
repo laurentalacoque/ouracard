@@ -35,22 +35,31 @@ def parse_card(filename, description=""):
                 card['files'][name].append(base64.b64decode(record.text))
         return card
 
-def print_card(card):
+def format_card(card):
     import binascii as ba
-    print("card <%s> id: %s (%s)"% (card['filename'], ba.hexlify(card['tagid']), card['application-type']))
-    print("\tdescription:      %s"%card['description'])
-    print("\tchange-time:      %s"%card['change-time'])
-    print("\tapplication-data: %s"% ba.hexlify(card['application-data']))
+    result =""
+    result += ("card <%s> id: %s (%s)\n"% (card['filename'], ba.hexlify(card['tagid']), card['application-type']))
+    result += ("\tdescription:      \"%s\"\n"%card['description'])
+    result += ("\tchange-time:      %s\n"%card['change-time'])
+    result += ("\tapplication-data: %s\n"% ba.hexlify(card['application-data']))
     files = card['files']
     filelist = files.keys()
     filelist.sort()
     for f in filelist:
-        print("\t%s" % f)
+        result += ("\t%s\n" % f)
         for r in files[f]:
-            print ("\t\t%s"%ba.hexlify(r))
-    
+            result +=  ("\t\t%s\n"%ba.hexlify(r))
+    return result
+
+def print_card(card):
+    print(format_card(card))
 
 if __name__ == '__main__':
-    mycard = parse_card('card.xml') 
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('filename')
+    args = parser.parse_args()
+    description = raw_input("Change description: ")
+    mycard = parse_card(args.filename,description) 
     print_card(mycard)
 
