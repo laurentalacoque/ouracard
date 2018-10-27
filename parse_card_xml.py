@@ -37,18 +37,19 @@ def parse_card(filename, description=""):
 
 def format_card(card):
     import binascii as ba
+    import re
     result =""
     result += ("card <%s> id: %s (%s)\n"% (card['filename'], ba.hexlify(card['tagid']), card['application-type']))
     result += ("\tdescription:      \"%s\"\n"%card['description'])
     result += ("\tchange-time:      %s\n"%card['change-time'])
-    result += ("\tapplication-data: %s\n"% ba.hexlify(card['application-data']))
+    result += ("\tapplication-data: %s (%s)\n"% (ba.hexlify(card['application-data']),re.sub('[\x00-\x20\x7f-\xff]','.',card['application-data'])))
     files = card['files']
     filelist = files.keys()
     filelist.sort()
     for f in filelist:
         result += ("\t%s\n" % f)
         for r in files[f]:
-            result +=  ("\t\t%s\n"%ba.hexlify(r))
+            result +=  ("\t\t%s\n\t\t  (%s)\n"%(ba.hexlify(r),re.sub('[\x00-\x20\x7f-\xff]','.',r)))
     return result
 
 def print_card(card):
@@ -81,6 +82,7 @@ if __name__ == '__main__':
 
     mycard = parse_card(args.filename,description) 
     print_card(mycard)
+    #import pdb; pdb.set_trace()
     
     store_card(mycard)
 
