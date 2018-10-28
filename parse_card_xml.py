@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 def parse_card(filename, description=""):
         from lxml import etree
         import base64
@@ -6,7 +6,10 @@ def parse_card(filename, description=""):
         card = {'filename':filename, 'description':description}
 
         import time
-        ts = time.gmtime()
+        import os
+        mtime = os.path.getmtime(filename)
+        ts = time.localtime(mtime)
+
         card['change-time'] = time.strftime("%Y-%m-%d-%H%M%S", ts)
 
         tree = etree.parse("card.xml")
@@ -42,14 +45,19 @@ def format_card(card):
     result += ("card <%s> id: %s (%s)\n"% (card['filename'], ba.hexlify(card['tagid']), card['application-type']))
     result += ("\tdescription:      \"%s\"\n"%card['description'])
     result += ("\tchange-time:      %s\n"%card['change-time'])
-    result += ("\tapplication-data: %s (%s)\n"% (ba.hexlify(card['application-data']),re.sub('[\x00-\x20\x7f-\xff]','.',card['application-data'])))
+    result += ("\tapplication-data: %s\n"% (ba.hexlify(card['application-data'])))
+    astext = re.sub('[\x00-\x20\x7f-\xff]','`',card['application-data'])
+    astext = " ".join(astext)
+    result += ("\t                  %s\n"% (astext))
     files = card['files']
     filelist = files.keys()
     filelist.sort()
     for f in filelist:
         result += ("\t%s\n" % f)
         for r in files[f]:
-            result +=  ("\t\t%s\n\t\t  (%s)\n"%(ba.hexlify(r),re.sub('[\x00-\x20\x7f-\xff]','.',r)))
+            astext = re.sub('[\x00-\x20\x7f-\xff]','`',r)
+            astext = " ".join(astext)
+            result +=  ("\t\t%s\n\t\t%s\n"%(ba.hexlify(r),astext))
     return result
 
 def print_card(card):
