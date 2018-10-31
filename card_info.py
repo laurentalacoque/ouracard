@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+printhex = True
+printbin = True
 zones ={
     65 : "A",
     66 : "B",
@@ -68,10 +70,14 @@ schema = {
         ],
     ":2000:2030":
         [
-            {"length":65, "type": "bin", "name":"unknown1"},
+            {"length":7, "type": "bin", "name":"unknown1"},
+            {"length":8, "type": "network", "name":"network"},
+            {"length":50, "type": "bin", "name":"unknown2"},
             {"length":14, "type": "date", "name":"abostart"},
             {"length":14, "type": "date", "name":"aboend"},
-            {"length":71, "type": "bin", "name":"unknown2"},
+            {"length":39, "type": "bin", "name":"unknown3"},
+            {"length":8, "type": "network", "name":"network"},
+            {"length":24, "type": "bin", "name":"unknown4"},
             {"length":68, "type": "null", "name":"null"},
         ],
     ":2000:2010":
@@ -139,10 +145,6 @@ def hex2bin(hexstring):
 
 def parse_hexstring(hexstring, schema,prefix=""):
     binstring = hex2bin(hexstring)
-    #binstring = bin(int(hexstring,16))[2:];
-    #print("hex: %s\nbin: %s\n"%(hexstring,binstring))
-    #import pdb; pdb.set_trace()
-    
     result = "" #prefix + binstring +"\n"
     for token in schema:
         try:
@@ -219,12 +221,10 @@ def format_card(card):
             if int(r,16) == 0:
                 result += ("\t\tnull (%d B, %d b)\n"%(int(len(r)/2),len(r)*4))
             else:
-                result +=  ("\t\t%s\n"%(r))
+                if printhex: result +=  ("\t\t%s\n"%(r))
+                if printbin: result +=  ("\t\t%s\n"%(hex2bin(r)))
                 if schem is not None:
                     result += parse_hexstring(r,schem,prefix="\t\t |")
-                else:
-                    #show bin string
-                    result += "\t\t"+hex2bin(r)+"\n"
                     
     return result
 
