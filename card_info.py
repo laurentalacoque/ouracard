@@ -24,7 +24,17 @@ location = {
     2219 : "Cite Internationale (tag) 2"
 }
     
-    
+filename = {
+    ":2000:2001":"Ticketing / Environment Holder",
+    ":2000:2010":"Ticketing / Events",
+    ":2000:2050":"Ticketing / Contract List",
+    ":2000:2020":"Ticketing / Contracts",
+    ":2000:2030":"Ticketing / Contracts",
+    ":2000:202a":"Ticketing / Counter",
+    ":2000:202b":"Ticketing / Counter",
+    ":2000:202c":"Ticketing / Counter",
+    ":2000:202d":"Ticketing / Counter",
+}    
     
 schema = {
     ":1000:1004":
@@ -47,6 +57,15 @@ schema = {
             {"length":8*8, "type": "ascii", "name":"tag"},
             {"length":8*8, "type": "null", "name":"null"},
         ],
+    ":2000:2050":
+        [
+            {"length":4, "type": "int", "name":"count"},
+            {"length":24, "type": "bin", "name":"contract"},
+            {"length":24, "type": "bin", "name":"contract"},
+            {"length":24, "type": "bin", "name":"contract"},
+            {"length":24, "type": "bin", "name":"contract"},
+            {"length":132, "type": "null", "name":"null"},
+        ],
     ":2000:2030":
         [
             {"length":65, "type": "bin", "name":"unknown1"},
@@ -66,6 +85,16 @@ schema = {
             {"length":11, "type": "time", "name":"firsttime"},
             {"length":2, "type": "bin", "name":"unknown3"},
             {"length":92, "type": "null", "name":"null"}
+        ],
+    ":2000:2001":
+        [
+            {"length":19, "type": "bin", "name":"unknown1"},
+            {"length":8, "type": "zone", "name":"zone"},
+            {"length":10, "type": "bin", "name":"unknown2"},
+            {"length":8, "type": "network", "name":"issuer-network"},
+            {"length":14, "type": "date", "name":"validity"},
+            {"length":98, "type": "bin", "name":"unknown3"},
+            {"length":75, "type": "null", "name":"null"},
         ],
     ":notused:2010":
         [
@@ -183,7 +212,8 @@ def format_card(card):
     filelist = files.keys()
     filelist.sort()
     for f in filelist:
-        result += ("\t%s\n" % f)
+        filedesc = filename.get(f,"Unknown")
+        result += ("\t%s (%s)\n" % (f,filedesc))
         schem = schema.get(f)
         for r in files[f]:
             if int(r,16) == 0:
