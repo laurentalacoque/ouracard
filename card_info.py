@@ -2,6 +2,7 @@
 printhex = True
 printbin = True
 printstr = True
+
 zones ={
     65 : "A",
     66 : "B",
@@ -28,17 +29,55 @@ location = {
 }
     
 filename = {
-    ":2000:2001":"Ticketing / Environment Holder",
+    ":3f04"     :"AID",
+    ":2"        :"ICC",
+    ":3"        :"ID",
+    ":1000:1004":"EP / AID",
+    ":1000:1014":"EP / Load Log",
+    ":1000:1015":"EP / Purchase Log",
+    ":2000:2001":"Ticketing / Environment",
+    ":2000:2002":"Ticketing / Environment Holder",
+    ":2000:2004":"Ticketing / AID",
     ":2000:2010":"Ticketing / Events",
-    ":2000:2050":"Ticketing / Contract List",
     ":2000:2020":"Ticketing / Contracts",
     ":2000:2030":"Ticketing / Contracts",
+    ":2000:2040":"Ticketing / Special Events",
+    ":2000:2050":"Ticketing / Contract List",
     ":2000:202a":"Ticketing / Counter",
     ":2000:202b":"Ticketing / Counter",
     ":2000:202c":"Ticketing / Counter",
     ":2000:202d":"Ticketing / Counter",
+    ":2f10":"Display / Free",
+    ":3100:3104":"MPP / AID",
+    ":3100:3102":"MPP / Public Param.",
+    ":3100:3115":"MPP / Log",
+    ":3100:3120":"MPP / Contracts",
+    ":3100:3113":"MPP / Counters",
+    ":3100:3123":"MPP / Counters",
+    ":3100:3133":"MPP / Counters",
+    ":3100:3169":"MPP / Counters",
+    ":3100:3150":"MPP / Misc.",
+    ":3100:31f0":"MPP / Free",
+
 }    
     
+modalities = {
+    1 : "Bus urbain",
+    2 : "Bus interurbain",
+    3 : "Metro",
+    4 : "Tram",
+    5 : "Train",
+    6 : "Parking"
+}
+
+transitions  = {
+    1 : "Entree",
+    2 : "Sortie",
+    4 : "Inspection",
+    6 : "changement (Entree)",
+    7 : "changement (Sortie)"
+}
+
 schema = {
     ":1000:1004":
         [
@@ -85,8 +124,10 @@ schema = {
         [
             {"length":14, "type": "date", "name":"date"},
             {"length":11, "type": "time", "name":"time"},
-            {"length":38, "type": "bin", "name":"unknown1"},
-            {"length":6, "type": "network", "name":"reseau"},
+            {"length":28, "type": "bin", "name":"unknown1"},
+            {"length":4, "type": "modality", "name":"modality"},
+            {"length":4, "type": "transition", "name":"transition"},
+            {"length":8, "type": "network", "name":"reseau"},
             {"length":16, "type": "location", "name":"eventloc"},
             {"length":16, "type": "int", "name":"linenumber"},
             {"length":16, "type": "int", "name":"coachnumber"},
@@ -152,7 +193,7 @@ def hex2str(hexstring):
     bastr = ba.unhexlify(hexstring)
     import re
     string = re.sub('[\x00-\x20\x7f-\xff]','`',bastr)
-    return string
+    return " ".join(string)
 
 def parse_hexstring(hexstring, schema,prefix=""):
     binstring = hex2bin(hexstring)
@@ -188,6 +229,12 @@ def parse_hexstring(hexstring, schema,prefix=""):
                     result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
                 elif tokentype == "zone":
                     tokenvalue = zones.get(int(tokendata,2),int(tokendata,2))
+                    result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
+                elif tokentype == "modality":
+                    tokenvalue = modalities.get(int(tokendata,2),int(tokendata,2))
+                    result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
+                elif tokentype == "transition":
+                    tokenvalue = transitions.get(int(tokendata,2),int(tokendata,2))
                     result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
                 elif tokentype == "network":
                     tokenvalue = networks.get(int(tokendata,2),int(tokendata,2))
@@ -228,6 +275,7 @@ def format_card(card):
     filelist.sort()
     for f in filelist:
         filedesc = filename.get(f,"Unknown")
+        result += "_________________________________________________________________\n"
         result += ("\t%s (%s)\n" % (f,filedesc))
         schem = schema.get(f)
         for r in files[f]:
@@ -238,7 +286,7 @@ def format_card(card):
                 if printstr: result +=  ("\t\t%s\n"%(hex2str(r)))
                 if printbin: result +=  ("\t\t%s\n"%(hex2bin(r)))
                 if schem is not None:
-                    result += parse_hexstring(r,schem,prefix="\t\t |")
+                    result += parse_hexstring(r,schem,prefix="\t\t\t|")
                     
     return result
 
