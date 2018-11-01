@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 printhex = True
 printbin = True
+printstr = True
 zones ={
     65 : "A",
     66 : "B",
@@ -87,10 +88,13 @@ schema = {
             {"length":38, "type": "bin", "name":"unknown1"},
             {"length":6, "type": "network", "name":"reseau"},
             {"length":16, "type": "location", "name":"eventloc"},
-            {"length":42, "type": "bin", "name":"unknown2"},
+            {"length":16, "type": "int", "name":"linenumber"},
+            {"length":16, "type": "int", "name":"coachnumber"},
+            {"length":10, "type": "bin", "name":"unknown2"},
             {"length":11, "type": "time", "name":"firsttime"},
-            {"length":2, "type": "bin", "name":"unknown3"},
-            {"length":92, "type": "null", "name":"null"}
+            {"length":1, "type": "bin", "name":"is-simulation"},
+            {"length":2, "type": "bin", "name":"direction"},
+            {"length":91, "type": "null", "name":"null"}
         ],
     ":2000:2001":
         [
@@ -142,6 +146,13 @@ def hex2bin(hexstring):
     for c in hexstring:
         binstring += assoc[c]
     return binstring
+
+def hex2str(hexstring):
+    import binascii as ba
+    bastr = ba.unhexlify(hexstring)
+    import re
+    string = re.sub('[\x00-\x20\x7f-\xff]','`',bastr)
+    return string
 
 def parse_hexstring(hexstring, schema,prefix=""):
     binstring = hex2bin(hexstring)
@@ -210,6 +221,8 @@ def format_card(card):
     result += ("\tdescription:      \"%s\"\n"%card['description'])
     result += ("\tchange-time:      %s\n"%card['change-time'])
     result += ("\tapplication-data: %s\n"% (card['application-data']))
+    result += ("\t                  %s\n"% (hex2str(card['application-data'])))
+    result += ("\t                  %s\n"% (hex2bin(card['application-data'])))
     files = card['files']
     filelist = files.keys()
     filelist.sort()
@@ -222,6 +235,7 @@ def format_card(card):
                 result += ("\t\tnull (%d B, %d b)\n"%(int(len(r)/2),len(r)*4))
             else:
                 if printhex: result +=  ("\t\t%s\n"%(r))
+                if printstr: result +=  ("\t\t%s\n"%(hex2str(r)))
                 if printbin: result +=  ("\t\t%s\n"%(hex2bin(r)))
                 if schem is not None:
                     result += parse_hexstring(r,schem,prefix="\t\t |")
@@ -242,5 +256,8 @@ if __name__ == '__main__':
         jsonfile = f.read()
         import json
         mycard = json.loads(jsonfile)
-        print_card(mycard)
+        card_info = format_card(mycard)
+        #write infos
+        with open(mycard["tagid"]+"-"+mycard["change-time"]+".info","w") as out:
+            out.write(card_info)
 
