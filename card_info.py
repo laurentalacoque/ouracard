@@ -139,9 +139,10 @@ schema = {
         ],
     ":2000:2001":
         [
-            {"length":19, "type": "bin", "name":"unknown1"},
-            {"length":8, "type": "zone", "name":"zone"},
-            {"length":10, "type": "bin", "name":"unknown2"},
+            {"length":6, "type": "bin", "name":"app-version"},
+            {"length":7, "type": "bin", "name":"unknown"},
+            {"length":12, "type": "bcd3", "name":"country"},
+            {"length":12, "type": "bcd3", "name":"networkid"},
             {"length":8, "type": "network", "name":"issuer-network"},
             {"length":14, "type": "date", "name":"validity"},
             {"length":98, "type": "bin", "name":"unknown3"},
@@ -238,6 +239,12 @@ def parse_hexstring(hexstring, schema,prefix=""):
                     result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
                 elif tokentype == "network":
                     tokenvalue = networks.get(int(tokendata,2),int(tokendata,2))
+                    result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
+                elif tokentype == "bcd3":
+                    tokenvalue = ""
+                    tokenvalue += str(int(tokendata[0:4],2))
+                    tokenvalue += str(int(tokendata[4:8],2))
+                    tokenvalue += str(int(tokendata[8:12],2))
                     result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
                 elif tokentype == "ascii":
                     tokenvalue = ""
