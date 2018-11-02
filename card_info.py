@@ -2,6 +2,11 @@
 printhex = True
 printbin = True
 printstr = True
+printalpha = False
+en1545_alpha4 = [ "-","A","B","C","D","E","F","G",
+          "H","I","J","K","L","M","N","O",
+          "P","Q","R","S","T","U","V","W",
+          "X","Y","Z","?","?","?","?"," " ] #Courtesy cardpeek
 
 zones ={
     65 : "A",
@@ -145,7 +150,10 @@ schema = {
             {"length":12, "type": "bcd3", "name":"networkid"},
             {"length":8, "type": "network", "name":"issuer-network"},
             {"length":14, "type": "date", "name":"validity"},
-            {"length":98, "type": "bin", "name":"unknown3"},
+            #{"length":98, "type": "bin", "name":"unknown3"},
+            {"length":10, "type": "bin", "name":"unknown3"},
+            {"length":32, "type": "bcddate", "name":"date-of-birth"},
+            {"length":56, "type": "bin", "name":"unknown4"},
             {"length":75, "type": "null", "name":"null"},
         ],
     ":notused:2010":
@@ -189,6 +197,12 @@ def hex2bin(hexstring):
         binstring += assoc[c]
     return binstring
 
+def bin2alpha(binstring):
+    res=""
+    for i in range(int(len(binstring)/4)):
+       res += en1545_alpha4[int(binstring[4*i:4*(i+1)],2)] 
+    return res
+
 def hex2str(hexstring):
     import binascii as ba
     bastr = ba.unhexlify(hexstring)
@@ -212,7 +226,14 @@ def parse_hexstring(hexstring, schema,prefix=""):
                     result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
                 elif tokentype == "bin":
                     tokenvalue = ""
-                    result += prefix + "%s: %s\n"%(tokenname,tokendata)
+                    bin0 = bin2alpha(tokendata)
+                    bin1 = bin2alpha(tokendata[1:])
+                    bin2 = bin2alpha(tokendata[2:])
+                    bin3 = bin2alpha(tokendata[3:])
+                    if len(tokendata) > 4:
+                        result += prefix + "%s: %s (%s / .%s / ..%s / ...%s)\n"%(tokenname,tokendata, bin0,bin1,bin2,bin3)
+                    else:
+                        result += prefix + "%s: %s\n"%(tokenname,tokendata)
                 elif tokentype == "date":
                     from datetime import date,timedelta
                     orig = date(1997,1,1)
@@ -245,6 +266,19 @@ def parse_hexstring(hexstring, schema,prefix=""):
                     tokenvalue += str(int(tokendata[0:4],2))
                     tokenvalue += str(int(tokendata[4:8],2))
                     tokenvalue += str(int(tokendata[8:12],2))
+                    result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
+                elif tokentype == "bcddate":
+                    tokenvalue = ""
+                    tokenvalue += str(int(tokendata[0:4],2))
+                    tokenvalue += str(int(tokendata[4:8],2))
+                    tokenvalue += str(int(tokendata[8:12],2))
+                    tokenvalue += str(int(tokendata[12:16],2))
+                    tokenvalue += "-"
+                    tokenvalue += str(int(tokendata[16:20],2))
+                    tokenvalue += str(int(tokendata[20:24],2))
+                    tokenvalue += "-"
+                    tokenvalue += str(int(tokendata[24:28],2))
+                    tokenvalue += str(int(tokendata[28:32],2))
                     result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
                 elif tokentype == "ascii":
                     tokenvalue = ""
@@ -292,6 +326,12 @@ def format_card(card):
                 if printhex: result +=  ("\t\t%s\n"%(r))
                 if printstr: result +=  ("\t\t%s\n"%(hex2str(r)))
                 if printbin: result +=  ("\t\t%s\n"%(hex2bin(r)))
+                if printalpha:
+                    binstr = hex2bin(r)
+                    result +=  ("\t\t%s\n"%(bin2alpha(binstr)))
+                    result +=  ("\t\t%s\n"%(bin2alpha(binstr[1:])))
+                    result +=  ("\t\t%s\n"%(bin2alpha(binstr[2:])))
+                    result +=  ("\t\t%s\n"%(bin2alpha(binstr[3:])))
                 if schem is not None:
                     result += parse_hexstring(r,schem,prefix="\t\t\t|")
                     
