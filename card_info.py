@@ -115,14 +115,22 @@ schema = {
         ],
     ":2000:2030":
         [
-            {"length":7, "type": "bin", "name":"unknown1"},
-            {"length":8, "type": "network", "name":"network"},
-            {"length":50, "type": "bin", "name":"unknown2"},
+            {"length":7, "type": "bitmap", "name":"bitmap","value":"1110111"},
+            {"length":8, "type": "network", "name":"provider"},
+            #{"length":50, "type": "bin", "name":"unknown2"},
+            {"length":16, "type": "hex", "name":"contract-type"},
+            {"length":32, "type": "hex", "name":"contract-serial"},
+            #validity
+            {"length":2, "type": "bitmap", "name":"validity bitmap","value":"11"},
             {"length":14, "type": "date", "name":"abostart"},
             {"length":14, "type": "date", "name":"aboend"},
-            {"length":39, "type": "bin", "name":"unknown3"},
-            {"length":8, "type": "network", "name":"network"},
-            {"length":24, "type": "bin", "name":"unknown4"},
+            {"length":8, "type": "int", "name":"status"},
+            {"length":26, "type": "bin", "name":"unknown"},
+            {"length":14, "type": "date", "name":"sale-date"},
+            {"length":8, "type": "bin", "name":"unknown"},
+            {"length":8, "type": "int", "name":"country"},
+            {"length":8, "type": "network", "name":"sale-op"},
+        
             {"length":68, "type": "null", "name":"null"},
         ],
     ":2000:2010":
