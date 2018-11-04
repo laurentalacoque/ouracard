@@ -435,15 +435,20 @@ def print_card(card):
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('filename')
     args = parser.parse_args()
-    
-    with open(args.filename,'r') as f:
-        jsonfile = f.read()
-        import json
-        mycard = json.loads(jsonfile)
-        card_info = format_card(mycard)
-        #write infos
-        with open(mycard["tagid"]+"-"+mycard["change-time"]+".info","w") as out:
-            out.write(card_info)
+    import os
+    for myfile in os.listdir("."):
+        if myfile.endswith(".json"):
+            try:
+                print(myfile)
+                with open(myfile,'r') as f:
+                    jsonfile = f.read()
+                    import json
+                    mycard = json.loads(jsonfile)
+                    card_info = format_card(mycard)
+                    #write infos
+                    with open(mycard["tagid"]+"-"+mycard["change-time"]+".info","w") as out:
+                        out.write(card_info)
+            except:
+                print("\tskipped\n")
 
