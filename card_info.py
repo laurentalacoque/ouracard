@@ -32,6 +32,33 @@ location = {
     2220 : "Cite Internationale (tag)",
     2219 : "Cite Internationale (tag) 2"
 }
+
+contract_status = {
+        0:"Never validated",
+        1:"Used once",
+        2:"Validated",
+        3:"Renewment notification sent",
+        4:"Punched",
+        5:"Cancelled",
+        6:"Interrupted",
+        7:"Status OK",
+        13:"Not available for validation",
+        14:"Free entry",
+        15:"Active",
+        16:"Pre-allocated",
+        17:"Completed and to be removed",
+        18:"Completed and cannot be removed",
+        19:"Blocked",
+        20:"Data group encrypted flag",
+        21:"Data group anonymous flag",
+        33:"Pending",
+        63:"Suspended",
+        88:"Disabled",
+        125:"Suspended contract",
+        126:"Invalid",
+        127:"Invalid et reimbursed",
+        255:"Deletable",
+} #courtesy CalypsoInspector
     
 filename = {
     ":3f04"     :"AID",
@@ -65,8 +92,16 @@ filename = {
     ":3100:31f0":"MPP / Free",
 
 }    
+
+card_status = {
+    0:"Anonyme", 
+    1:"Declarative", 
+    2:"Personnalisee", 
+    3:"Codage specifique"
+} #Courtesy CalypsoInspector
     
 modalities = {
+    0 : "Non specifie",
     1 : "Bus urbain",
     2 : "Bus interurbain",
     3 : "Metro",
@@ -76,6 +111,7 @@ modalities = {
 }
 
 transitions  = {
+    0 : "Non specifie",
     1 : "Entree",
     2 : "Sortie",
     4 : "Inspection",
@@ -118,13 +154,13 @@ schema = {
             {"length":7, "type": "bitmap", "name":"bitmap","value":"1110111"},
             {"length":8, "type": "network", "name":"provider"},
             #{"length":50, "type": "bin", "name":"unknown2"},
-            {"length":16, "type": "hex", "name":"contract-type"},
+            {"length":16, "type": "hex", "name":"contract-fare"},
             {"length":32, "type": "hex", "name":"contract-serial"},
             #validity
             {"length":2, "type": "bitmap", "name":"validity bitmap","value":"11"},
             {"length":14, "type": "date", "name":"abostart"},
             {"length":14, "type": "date", "name":"aboend"},
-            {"length":8, "type": "int", "name":"status"},
+            {"length":8, "type": "contractstatus", "name":"status"},
             {"length":26, "type": "bin", "name":"unknown"},
             {"length":14, "type": "date", "name":"sale-date"},
             {"length":8, "type": "bin", "name":"unknown"},
@@ -171,7 +207,7 @@ schema = {
             {"length":14, "type": "date", "name":"profile-date"},
             # holder data
             {"length":12, "type": "bitmap", "name":"holder-bitmap", "value":"000000001011"},
-            {"length":4, "type": "bin", "name":"card-status"},
+            {"length":4, "type": "cardstatus", "name":"card-status"},
             {"length":4, "type": "bin", "name":"telereglement"},
             {"length":6, "type": "bin", "name":"commercial-id"},
             {"length":76, "type": "null", "name":"null"},
@@ -194,7 +230,9 @@ schema = {
 }
 best_contract_schema = [
             {"length":3, "type": "bitmap", "name":"bc-bitmap", "value":"110"},
-            {"length":16, "type": "bin", "name":"bc-tariff"},
+            {"length":4, "type": "bin", "name":"bc-tariff-expl"},
+            {"length":8, "type": "bin", "name":"bc-tariff-type"},
+            {"length":4, "type": "int", "name":"bc-tariff-priority"},
             {"length":5, "type": "int", "name":"bc-pointer"},
 ]
 
@@ -249,6 +287,14 @@ def parse_hexstring(hexstring, schema,prefix=""):
                 if tokentype == "int":
                     tokenvalue = str(int(tokendata,2))
                     result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
+                elif tokentype == "cardstatus":
+                    tokenvalue = (int(tokendata,2))
+                    tokenvalue2 = card_status.get(tokenvalue,"Unknown")
+                    result += prefix + "%s: %s (%s)\n"%(tokenname,tokenvalue, tokenvalue2)
+                elif tokentype == "contractstatus":
+                    tokenvalue = (int(tokendata,2))
+                    tokenvalue2 = contract_status.get(tokenvalue,"Unknown")
+                    result += prefix + "%s: %s (%s)\n"%(tokenname,tokenvalue, tokenvalue2)
                 elif tokentype == "hex":
                     tokenvalue = str(hex(int(tokendata,2)))[2:]
                     result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
