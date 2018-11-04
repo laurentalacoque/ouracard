@@ -107,7 +107,7 @@ schema = {
     ":2000:2050":
         [
             {"length":4, "type": "int", "name":"count"},
-            {"length":24, "type": "bin", "name":"contract"},
+            {"length":24, "type": "bestcontract", "name":"contract"},
             {"length":24, "type": "bin", "name":"contract"},
             {"length":24, "type": "bin", "name":"contract"},
             {"length":24, "type": "bin", "name":"contract"},
@@ -192,6 +192,11 @@ schema = {
             {"length":8, "type": "int", "name":"eventlocgate"}
         ]
 }
+best_contract_schema = [
+            {"length":3, "type": "bitmap", "name":"bc-bitmap", "value":"110"},
+            {"length":16, "type": "bin", "name":"bc-tariff"},
+            {"length":5, "type": "int", "name":"bc-pointer"},
+]
 
 def hex2bin(hexstring):
     assoc={
@@ -314,6 +319,11 @@ def parse_hexstring(hexstring, schema,prefix=""):
                     tokenvalue += str(int(tokendata[24:28],2))
                     tokenvalue += str(int(tokendata[28:32],2))
                     result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
+                elif tokentype == "bestcontract":
+                    #todo : would be better with bin data
+                    # this works here because the size is 24 bits but we should add leading
+                    # zeroes so that mod(len(tokendata),4) == 0
+                    result += parse_hexstring(str(hex(int(tokendata,2)))[2:],best_contract_schema,prefix)
                 elif tokentype == "ascii":
                     tokenvalue = ""
                     for i in range(int(tokenlength /8)):
