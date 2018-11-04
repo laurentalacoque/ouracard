@@ -145,16 +145,26 @@ schema = {
     ":2000:2001":
         [
             {"length":6, "type": "bin", "name":"app-version"},
-            {"length":7, "type": "bin", "name":"unknown"},
+            {"length":7, "type": "bitmap", "name":"bitmap", "value":"0000111"},
             {"length":12, "type": "bcd3", "name":"country"},
             {"length":12, "type": "bcd3", "name":"networkid"},
             {"length":8, "type": "network", "name":"issuer-network"},
             {"length":14, "type": "date", "name":"validity"},
             #{"length":98, "type": "bin", "name":"unknown3"},
-            {"length":10, "type": "bin", "name":"unknown3"},
+            #{"length":10, "type": "bin", "name":"unknown3"},
+            {"length":8, "type": "bitmap", "name":"holder-bitmap", "value":"11000010"},
+            {"length":2, "type": "bitmap", "name":"birth-bitmap", "value":"01"},
             {"length":32, "type": "bcddate", "name":"date-of-birth"},
-            {"length":56, "type": "bin", "name":"unknown4"},
-            {"length":75, "type": "null", "name":"null"},
+            {"length":4, "type": "bitmap", "name":"profiles-number", "value":"0001"},
+            {"length":3, "type": "bitmap", "name":"profile-bitmap", "value":"110"},
+            {"length":8, "type": "hex", "name":"profile-id"},
+            {"length":14, "type": "date", "name":"profile-date"},
+            # holder data
+            {"length":12, "type": "bitmap", "name":"holder-bitmap", "value":"000000001011"},
+            {"length":4, "type": "bin", "name":"card-status"},
+            {"length":4, "type": "bin", "name":"telereglement"},
+            {"length":6, "type": "bin", "name":"commercial-id"},
+            {"length":76, "type": "null", "name":"null"},
         ],
     ":notused:2010":
         [
@@ -224,6 +234,20 @@ def parse_hexstring(hexstring, schema,prefix=""):
                 if tokentype == "int":
                     tokenvalue = str(int(tokendata,2))
                     result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
+                elif tokentype == "hex":
+                    tokenvalue = str(hex(int(tokendata,2)))[2:]
+                    result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
+                elif tokentype == "bitmap":
+                    #TODO we should implement this
+                    #here we only check if the bitmap is valid
+                    #and exit if it's not
+                    if tokendata == token["value"]:
+                        # right bitmap
+                        result += prefix + "%s: %s\n"%(tokenname,tokendata)
+                    else:
+                        # wrong bitmap, we're dead
+                        result += "!!!!!! Error : wrong bitmap %s (was expecting %s)\n"%(tokendata,token["value"])
+                        return result
                 elif tokentype == "bin":
                     tokenvalue = ""
                     bin0 = bin2alpha(tokendata)
