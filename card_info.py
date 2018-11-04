@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 printhex = True
-printbin = True
-printstr = True
+printbin = False
+printstr = False
 printalpha = False
 en1545_alpha4 = [ "-","A","B","C","D","E","F","G",
           "H","I","J","K","L","M","N","O",
@@ -231,7 +231,7 @@ schema = {
 best_contract_schema = [
             {"length":3, "type": "bitmap", "name":"bc-bitmap", "value":"110"},
             {"length":4, "type": "bin", "name":"bc-tariff-expl"},
-            {"length":8, "type": "bin", "name":"bc-tariff-type"},
+            {"length":8, "type": "hex", "name":"bc-tariff-type"},
             {"length":4, "type": "int", "name":"bc-tariff-priority"},
             {"length":5, "type": "int", "name":"bc-pointer"},
 ]
@@ -297,14 +297,14 @@ def parse_hexstring(hexstring, schema,prefix=""):
                     result += prefix + "%s: %s (%s)\n"%(tokenname,tokenvalue, tokenvalue2)
                 elif tokentype == "hex":
                     tokenvalue = str(hex(int(tokendata,2)))[2:]
-                    result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
+                    result += prefix + "%s: %sh\n"%(tokenname,tokenvalue)
                 elif tokentype == "bitmap":
                     #TODO we should implement this
                     #here we only check if the bitmap is valid
                     #and exit if it's not
                     if tokendata == token["value"]:
                         # right bitmap
-                        result += prefix + "%s: %s\n"%(tokenname,tokendata)
+                        result += prefix + "\t%s: [%s]\n"%(tokenname,tokendata)
                     else:
                         # wrong bitmap, we're dead
                         result += "!!!!!! Error : wrong bitmap %s (was expecting %s)\n"%(tokendata,token["value"])
@@ -315,10 +315,10 @@ def parse_hexstring(hexstring, schema,prefix=""):
                     bin1 = bin2alpha(tokendata[1:])
                     bin2 = bin2alpha(tokendata[2:])
                     bin3 = bin2alpha(tokendata[3:])
-                    if len(tokendata) > 4:
-                        result += prefix + "%s: %s (%s / .%s / ..%s / ...%s)\n"%(tokenname,tokendata, bin0,bin1,bin2,bin3)
+                    if printalpha and len(tokendata) > 4:
+                        result += prefix + "%s: %sb (%s / .%s / ..%s / ...%s)\n"%(tokenname,tokendata, bin0,bin1,bin2,bin3)
                     else:
-                        result += prefix + "%s: %s\n"%(tokenname,tokendata)
+                        result += prefix + "%s: %sb\n"%(tokenname,tokendata)
                 elif tokentype == "date":
                     from datetime import date,timedelta
                     orig = date(1997,1,1)
@@ -374,11 +374,12 @@ def parse_hexstring(hexstring, schema,prefix=""):
                     tokenvalue = ""
                     for i in range(int(tokenlength /8)):
                         tokenvalue += chr(int(tokendata[i*8:(i+1)*8],2))
-                    result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
+                    result += prefix + "%s: \"%s\"\n"%(tokenname,tokenvalue)
                 elif tokentype == "null":
                     #check if it's all 0
                     if int(tokendata,2) == 0:
-                        result += prefix + "%s: %d 0's\n"% (tokenname,len(tokendata))
+                        #result += prefix + "%s: %d 0's\n"% (tokenname,len(tokendata))
+                        result += ""
                     else:
                         result += prefix + "%s: WARNING not null : %s\n"% (tokenname,tokendata)
                 else:
