@@ -14,7 +14,7 @@ def parse_card(filename, description=""):
 
         card['change-time'] = time.strftime("%Y-%m-%d-%H%M%S", ts)
 
-        tree = etree.parse("card.xml")
+        tree = etree.parse(filename)
 
         application = tree.xpath("/card/applications/application")
         application = application[0]
@@ -62,6 +62,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('filename')
     args = parser.parse_args()
+    print("parsing %s"%args.filename)
     description = raw_input("Change description: ")
 
     mycard = parse_card(args.filename,description) 
