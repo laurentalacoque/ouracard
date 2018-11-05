@@ -233,6 +233,55 @@ schema = {
             {"length":76, "type": "null", "name":"null"},
         ],
 }
+
+event_schema = [
+    { "description":"Event Date"                              , "length":14  , "type":"date" },
+    { "description":"Event Time"                              , "length":11  , "type":"time" },
+    { "description":"Event"                                   , "length":28  , "type":"bitmap", 
+        "schema":[
+            { "description":"EventDisplayData"                    , "length":8   , "type":"undefined"},
+            { "description":"EventNetworkId"                      , "length":24  , "type":"undefined"},
+            { "description":"EventCode"                           , "length":0   , "type":"complex", "schema" :[
+                {"length":4, "type": "modality", "name":"modality"},
+                {"length":4, "type": "transition", "name":"transition"}
+            ]},
+            { "description":"EventResult"                         , "length":8   , "type":"undefined"},
+            { "description":"EventServiceProvider"                , "length":8   , "type":"network"},
+            { "description":"EventNotOkCounter"                   , "length":8   , "type":"undefined"},
+            { "description":"EventSerialNumber"                   , "length":24  , "type":"undefined"},
+            { "description":"EventDestination"                    , "length":16  , "type":"undefined"},
+            { "description":"EventLocationId"                     , "length":16  , "type":"location"},
+            { "description":"EventLocationGate"                   , "length":8   , "type":"undefined"},
+            { "description":"EventDevice"                         , "length":16  , "type":"undefined"},
+            { "description":"EventRouteNumber"                    , "length":16  , "type":"int"},
+            { "description":"EventRouteVariant"                   , "length":8   , "type":"undefined"},
+            { "description":"EventJourneyRun"                     , "length":16  , "type":"undefined"},
+            { "description":"EventVehicleId"                      , "length":16  , "type":"int"},
+            { "description":"EventVehicleClass"                   , "length":8   , "type":"undefined"},
+            { "description":"EventLocationType"                   , "length":5   , "type":"undefined"},
+            { "description":"EventEmployee"                       , "length":240 , "type":"undefined"},
+            { "description":"EventLocationReference"              , "length":16  , "type":"undefined"},
+            { "description":"EventJourneyInterchanges"            , "length":8   , "type":"undefined"},
+            { "description":"EventPeriodJourney"                  , "length":16  , "type":"undefined"},
+            { "description":"EventTotalJourneys"                  , "length":16  , "type":"undefined"},
+            { "description":"EventJourneyDistance"                , "length":16  , "type":"undefined"},
+            { "description":"EventPriceAmount"                    , "length":16  , "type":"amount"},
+            { "description":"EventPriceUnit"                      , "length":16  , "type":"undefined"},
+            { "description":"EventContractPointer"                , "length":5   , "type":"int"},
+            { "description":"EventAuthenticator"                  , "length":16  , "type":"undefined"},
+            { "description":"EventData"                           , "length":5   , "type":"bitmap", 
+                "schema" : [
+                    { "description":"EventDataFirstStamp"         , "length":14  , "type":"date"},
+                    { "description":"EventDataFirstStamp"         , "length":11  , "type":"time"},
+                    { "description":"EventDataSimulation"         , "length":1   , "type":"int"},
+                    { "description":"EventDataTrip"               , "length":2   , "type":"undefined"},
+                    { "description":"EventDataRouteDirection"     , "length":2   , "type":"int"}
+                ]
+            }
+        ]
+    }
+]
+
 best_contract_schema = [
             {"length":3, "type": "bitmap", "name":"bc-bitmap", "value":"110"},
             {"length":4, "type": "bin", "name":"bc-tariff-expl"},
