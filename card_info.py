@@ -149,7 +149,27 @@ schema = {
             {"length":24, "type": "bin", "name":"contract"},
             {"length":132, "type": "null", "name":"null"},
         ],
-    ":2000:2030":
+    ":2000:2030": #Warning : same as 2020
+        [
+            {"length":7, "type": "bitmap", "name":"bitmap","value":"1110111"},
+            {"length":8, "type": "network", "name":"provider"},
+            #{"length":50, "type": "bin", "name":"unknown2"},
+            {"length":16, "type": "hex", "name":"contract-fare"},
+            {"length":32, "type": "hex", "name":"contract-serial"},
+            #validity
+            {"length":2, "type": "bitmap", "name":"validity bitmap","value":"11"},
+            {"length":14, "type": "date", "name":"abostart"},
+            {"length":14, "type": "date", "name":"aboend"},
+            {"length":8, "type": "contractstatus", "name":"status"},
+            {"length":26, "type": "bin", "name":"unknown"},
+            {"length":14, "type": "date", "name":"sale-date"},
+            {"length":8, "type": "bin", "name":"unknown"},
+            {"length":8, "type": "int", "name":"country"},
+            {"length":8, "type": "network", "name":"sale-op"},
+        
+            {"length":68, "type": "null", "name":"null"},
+        ],
+    ":2000:2020": #Warning : same as 2030
         [
             {"length":7, "type": "bitmap", "name":"bitmap","value":"1110111"},
             {"length":8, "type": "network", "name":"provider"},
@@ -212,21 +232,6 @@ schema = {
             {"length":6, "type": "bin", "name":"commercial-id"},
             {"length":76, "type": "null", "name":"null"},
         ],
-    ":notused:2010":
-        [
-            {"length":14, "type": "date", "name":"date"},
-            {"length":11, "type": "time", "name":"time"},
-            {"length":8, "type": "int", "name":"display-data"},
-            {"length":24, "type": "int", "name":"networkid"},
-            {"length":8, "type": "int", "name":"eventcode"},
-            {"length":8, "type": "int", "name":"eventresult"},
-            {"length":8, "type": "int", "name":"eventserviceprov"},
-            {"length":8, "type": "int", "name":"eventnotokcount"},
-            {"length":24, "type": "int", "name":"eventserial"},
-            {"length":16, "type": "int", "name":"eventdest"},
-            {"length":16, "type": "int", "name":"eventloc"},
-            {"length":8, "type": "int", "name":"eventlocgate"}
-        ]
 }
 best_contract_schema = [
             {"length":3, "type": "bitmap", "name":"bc-bitmap", "value":"110"},
