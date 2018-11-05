@@ -243,37 +243,44 @@ best_contract_schema = [
 ]
 
 contract_schema = [
-    {"length":7, "type": "bitmap", "name":"bitmap","value":"1110111"},
-    {"length":8, "type": "network", "name":"provider"},
-    #{"length":50, "type": "bin", "name":"unknown2"},
-    {"length":16, "type": "hex", "name":"contract-fare"},
-    {"length":32, "type": "hex", "name":"contract-serial"},
-    #validity
-    {"length":2, "type": "bitmap", "name":"validity bitmap","value":"11"},
-    {"length":14, "type": "date", "name":"abostart"},
-    {"length":14, "type": "date", "name":"aboend"},
-    {"length":8, "type": "contractstatus", "name":"status"},
+    {"length":7, "type": "bitmap", "name":"bitmap", "schema":[
+            {"length":8, "type": "network", "name":"provider"},
+            {"length":16, "type": "hex", "name":"contract-fare"},
+            {"length":32, "type": "hex", "name":"contract-serial"},
+            {"length":8,  "type": "int", "name":"passenger-class"},
+            #validity
+            {"length":2, "type": "bitmap", "name":"validity bitmap", "schema":[
+                    {"length":14, "type": "date", "name":"abostart"},
+                    {"length":14, "type": "date", "name":"aboend"},
+            ]},
+            {"length":8, "type": "contractstatus", "name":"status"},
+            {"length":0, "type": "bin", "name":"data"},
+    ]},
+    # specific to 250:502
     {"length":26, "type": "bin", "name":"unknown"},
     {"length":14, "type": "date", "name":"sale-date"},
     {"length":8, "type": "bin", "name":"unknown"},
     {"length":8, "type": "int", "name":"country"},
     {"length":8, "type": "network", "name":"sale-op"},
-
-    {"length":68, "type": "null", "name":"null"},
 ]
 
 best_contracts_schema = [
+    # counter of 
     {"length":4, "type": "repeat", "name":"count", "schema" : [
+            # best contracts
             {"length":3, "type": "bitmap", "name":"bc-bitmap", "schema":[  
+                    # a Network ID
                     {"length":0, "type": "complex", "name":"NetworkId", "schema": [
                             {"length":12, "type": "bcd3", "name":"country"},
                             {"length":12, "type": "bcd3", "name":"network"}
                     ]},
+                    # a Tariff structure
                     {"length":0, "type": "complex", "name":"Tariff", "schema": [
                             {"length":4, "type": "bin", "name":"bc-tariff-expl"},
                             {"length":8, "type": "hex", "name":"bc-tariff-type"},
                             {"length":4, "type": "int", "name":"bc-tariff-priority"}
                     ]},
+                    # a best-contract pointer
                     {"length":5, "type": "int", "name":"bc-pointer"}
             ]}
     ]}
@@ -282,49 +289,47 @@ best_contracts_schema = [
 event_schema = [
     { "description":"Event Date"                              , "length":14  , "type":"date" },
     { "description":"Event Time"                              , "length":11  , "type":"time" },
-    { "description":"Event"                                   , "length":28  , "type":"bitmap", 
-        "schema": [
-            { "description":"EventDisplayData"                    , "length":8   , "type":"undefined"},
-            { "description":"EventNetworkId"                      , "length":24  , "type":"undefined"},
-            { "description":"EventCode"                           , "length":0   , "type":"complex", "schema" :[
-                {"length":4, "type": "modality", "name":"modality"},
-                {"length":4, "type": "transition", "name":"transition"}
-            ]},
-            { "description":"EventResult"                         , "length":8   , "type":"undefined"},
-            { "description":"EventServiceProvider"                , "length":8   , "type":"network"},
-            { "description":"EventNotOkCounter"                   , "length":8   , "type":"int"},
-            { "description":"EventSerialNumber"                   , "length":24  , "type":"hex"},
-            { "description":"EventDestination"                    , "length":16  , "type":"location"},
-            { "description":"EventLocationId"                     , "length":16  , "type":"location"},
-            { "description":"EventLocationGate"                   , "length":8   , "type":"int"},
-            { "description":"EventDevice"                         , "length":16  , "type":"int"},
-            { "description":"EventRouteNumber"                    , "length":16  , "type":"int"},
-            { "description":"EventRouteVariant"                   , "length":8   , "type":"int"},
-            { "description":"EventJourneyRun"                     , "length":16  , "type":"int"},
-            { "description":"EventVehicleId"                      , "length":16  , "type":"int"},
-            { "description":"EventVehicleClass"                   , "length":8   , "type":"bin"},
-            { "description":"EventLocationType"                   , "length":5   , "type":"bin"},
-            { "description":"EventEmployee"                       , "length":240 , "type":"hex"},
-            { "description":"EventLocationReference"              , "length":16  , "type":"int"},
-            { "description":"EventJourneyInterchanges"            , "length":8   , "type":"int"},
-            { "description":"EventPeriodJourney"                  , "length":16  , "type":"hex"},
-            { "description":"EventTotalJourneys"                  , "length":16  , "type":"hex"},
-            { "description":"EventJourneyDistance"                , "length":16  , "type":"int"},
-            { "description":"EventPriceAmount"                    , "length":16  , "type":"int"},
-            { "description":"EventPriceUnit"                      , "length":16  , "type":"int"},
-            { "description":"EventContractPointer"                , "length":5   , "type":"int"},
-            { "description":"EventAuthenticator"                  , "length":16  , "type":"hex"},
-            { "description":"EventData"                           , "length":5   , "type":"bitmap", 
-                "schema" : [
-                    { "description":"EventDataFirstStamp"         , "length":14  , "type":"date"},
-                    { "description":"EventDataFirstStamp"         , "length":11  , "type":"time"},
-                    { "description":"EventDataSimulation"         , "length":1   , "type":"int"},
-                    { "description":"EventDataTrip"               , "length":2   , "type":"bin"},
-                    { "description":"EventDataRouteDirection"     , "length":2   , "type":"int"}
-                ]
-            }
-        ]
-    }
+    { "description":"Event"                                   , "length":28  , "type":"bitmap", "schema": [
+        { "description":"EventDisplayData"                    , "length":8   , "type":"undefined"},
+        { "description":"EventNetworkId"                      , "length":24  , "type":"undefined"},
+        { "description":"EventCode"                           , "length":0   , "type":"complex", "schema" :[
+            {"length":4, "type": "modality", "name":"modality"},
+            {"length":4, "type": "transition", "name":"transition"}
+        ]},
+        { "description":"EventResult"                         , "length":8   , "type":"undefined"},
+        { "description":"EventServiceProvider"                , "length":8   , "type":"network"},
+        { "description":"EventNotOkCounter"                   , "length":8   , "type":"int"},
+        { "description":"EventSerialNumber"                   , "length":24  , "type":"hex"},
+        { "description":"EventDestination"                    , "length":16  , "type":"location"},
+        { "description":"EventLocationId"                     , "length":16  , "type":"location"},
+        { "description":"EventLocationGate"                   , "length":8   , "type":"int"},
+        { "description":"EventDevice"                         , "length":16  , "type":"int"},
+        { "description":"EventRouteNumber"                    , "length":16  , "type":"int"},
+        { "description":"EventRouteVariant"                   , "length":8   , "type":"int"},
+        { "description":"EventJourneyRun"                     , "length":16  , "type":"int"},
+        { "description":"EventVehicleId"                      , "length":16  , "type":"int"},
+        { "description":"EventVehicleClass"                   , "length":8   , "type":"bin"},
+        { "description":"EventLocationType"                   , "length":5   , "type":"bin"},
+        { "description":"EventEmployee"                       , "length":240 , "type":"hex"},
+        { "description":"EventLocationReference"              , "length":16  , "type":"int"},
+        { "description":"EventJourneyInterchanges"            , "length":8   , "type":"int"},
+        { "description":"EventPeriodJourney"                  , "length":16  , "type":"hex"},
+        { "description":"EventTotalJourneys"                  , "length":16  , "type":"hex"},
+        { "description":"EventJourneyDistance"                , "length":16  , "type":"int"},
+        { "description":"EventPriceAmount"                    , "length":16  , "type":"int"},
+        { "description":"EventPriceUnit"                      , "length":16  , "type":"int"},
+        { "description":"EventContractPointer"                , "length":5   , "type":"int"},
+        { "description":"EventAuthenticator"                  , "length":16  , "type":"hex"},
+        { "description":"EventData"                           , "length":5   , "type":"bitmap", 
+            "schema" : [
+                { "description":"EventDataFirstStamp"         , "length":14  , "type":"date"},
+                { "description":"EventDataFirstStamp"         , "length":11  , "type":"time"},
+                { "description":"EventDataSimulation"         , "length":1   , "type":"int"},
+                { "description":"EventDataTrip"               , "length":2   , "type":"bin"},
+                { "description":"EventDataRouteDirection"     , "length":2   , "type":"int"}
+            ]
+        }
+    ]}
 ]
 
 def parse_bin(binstring,schema,prefix=""):
@@ -643,6 +648,9 @@ def format_card(card):
                     result += parse_hexstring(r,schem,prefix="\t\t\t|")
                     if f == ":2000:2050":
                         r,b = parse_bin(hex2bin(r),best_contracts_schema,"\t\t\t>")
+                        result += r
+                    if f == ":2000:2020" or f == ":2000:2030":
+                        r,b = parse_bin(hex2bin(r),contract_schema,"\t\t\t>")
                         result += r
                     if f == ":2000:2010":
                         r,b = parse_bin(hex2bin(r),event_schema,"\t\t\t>")
