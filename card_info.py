@@ -238,7 +238,7 @@ event_schema = [
     { "description":"Event Date"                              , "length":14  , "type":"date" },
     { "description":"Event Time"                              , "length":11  , "type":"time" },
     { "description":"Event"                                   , "length":28  , "type":"bitmap", 
-        "schema":[
+        "schema": [
             { "description":"EventDisplayData"                    , "length":8   , "type":"undefined"},
             { "description":"EventNetworkId"                      , "length":24  , "type":"undefined"},
             { "description":"EventCode"                           , "length":0   , "type":"complex", "schema" :[
@@ -247,40 +247,165 @@ event_schema = [
             ]},
             { "description":"EventResult"                         , "length":8   , "type":"undefined"},
             { "description":"EventServiceProvider"                , "length":8   , "type":"network"},
-            { "description":"EventNotOkCounter"                   , "length":8   , "type":"undefined"},
-            { "description":"EventSerialNumber"                   , "length":24  , "type":"undefined"},
-            { "description":"EventDestination"                    , "length":16  , "type":"undefined"},
+            { "description":"EventNotOkCounter"                   , "length":8   , "type":"int"},
+            { "description":"EventSerialNumber"                   , "length":24  , "type":"hex"},
+            { "description":"EventDestination"                    , "length":16  , "type":"location"},
             { "description":"EventLocationId"                     , "length":16  , "type":"location"},
-            { "description":"EventLocationGate"                   , "length":8   , "type":"undefined"},
-            { "description":"EventDevice"                         , "length":16  , "type":"undefined"},
+            { "description":"EventLocationGate"                   , "length":8   , "type":"int"},
+            { "description":"EventDevice"                         , "length":16  , "type":"int"},
             { "description":"EventRouteNumber"                    , "length":16  , "type":"int"},
-            { "description":"EventRouteVariant"                   , "length":8   , "type":"undefined"},
-            { "description":"EventJourneyRun"                     , "length":16  , "type":"undefined"},
+            { "description":"EventRouteVariant"                   , "length":8   , "type":"int"},
+            { "description":"EventJourneyRun"                     , "length":16  , "type":"int"},
             { "description":"EventVehicleId"                      , "length":16  , "type":"int"},
-            { "description":"EventVehicleClass"                   , "length":8   , "type":"undefined"},
-            { "description":"EventLocationType"                   , "length":5   , "type":"undefined"},
-            { "description":"EventEmployee"                       , "length":240 , "type":"undefined"},
-            { "description":"EventLocationReference"              , "length":16  , "type":"undefined"},
-            { "description":"EventJourneyInterchanges"            , "length":8   , "type":"undefined"},
-            { "description":"EventPeriodJourney"                  , "length":16  , "type":"undefined"},
-            { "description":"EventTotalJourneys"                  , "length":16  , "type":"undefined"},
-            { "description":"EventJourneyDistance"                , "length":16  , "type":"undefined"},
-            { "description":"EventPriceAmount"                    , "length":16  , "type":"amount"},
-            { "description":"EventPriceUnit"                      , "length":16  , "type":"undefined"},
+            { "description":"EventVehicleClass"                   , "length":8   , "type":"bin"},
+            { "description":"EventLocationType"                   , "length":5   , "type":"bin"},
+            { "description":"EventEmployee"                       , "length":240 , "type":"hex"},
+            { "description":"EventLocationReference"              , "length":16  , "type":"int"},
+            { "description":"EventJourneyInterchanges"            , "length":8   , "type":"int"},
+            { "description":"EventPeriodJourney"                  , "length":16  , "type":"hex"},
+            { "description":"EventTotalJourneys"                  , "length":16  , "type":"hex"},
+            { "description":"EventJourneyDistance"                , "length":16  , "type":"int"},
+            { "description":"EventPriceAmount"                    , "length":16  , "type":"int"},
+            { "description":"EventPriceUnit"                      , "length":16  , "type":"int"},
             { "description":"EventContractPointer"                , "length":5   , "type":"int"},
-            { "description":"EventAuthenticator"                  , "length":16  , "type":"undefined"},
+            { "description":"EventAuthenticator"                  , "length":16  , "type":"hex"},
             { "description":"EventData"                           , "length":5   , "type":"bitmap", 
                 "schema" : [
                     { "description":"EventDataFirstStamp"         , "length":14  , "type":"date"},
                     { "description":"EventDataFirstStamp"         , "length":11  , "type":"time"},
                     { "description":"EventDataSimulation"         , "length":1   , "type":"int"},
-                    { "description":"EventDataTrip"               , "length":2   , "type":"undefined"},
+                    { "description":"EventDataTrip"               , "length":2   , "type":"bin"},
                     { "description":"EventDataRouteDirection"     , "length":2   , "type":"int"}
                 ]
             }
         ]
     }
 ]
+
+def parse_bin(binstring,schema,prefix=""):
+    #formatted response
+    res  = ""
+    for token in schema:
+        ttype   = token["type"]
+        #print(ttype)
+        tlength = token["length"]
+        tdesc   = token.get("description","")
+        tname   = token.get("name",tdesc)
+        tdata   = binstring[:tlength] 
+        #pop binstring
+        binstring   = binstring[tlength:] 
+        
+        # standard types
+        if ttype == "int":
+            tvalue = str(int(tdata,2))
+            res += prefix + "%s: %s\n"%(tname,tvalue)
+        elif ttype == "hex":
+            tvalue = str(hex(int(tdata,2)))[2:]
+            res += prefix + "%s: %sh\n"%(tname,tvalue)
+        elif ttype == "bin":
+            res += prefix + "%s: %sb\n"%(tname,tdata)
+
+        # date and time
+        elif ttype == "date":
+            from datetime import date,timedelta
+            orig = date(1997,1,1)
+            eventdate = orig+timedelta(days = int(tdata,2))
+            tvalue = str(eventdate)
+            res += prefix + "%s: %s\n"%(tname,tvalue)
+        elif ttype == "time":
+            mins = int(tdata,2)
+            hours = int(mins / 60)
+            minutes = mins - 60 * hours
+            tvalue = "%02d:%02d"%(hours,minutes)
+            res += prefix + "%s: %s\n"%(tname,tvalue)
+        elif ttype == "bcd3":
+            tvalue = ""
+            tvalue += str(int(tdata[0:4],2))
+            tvalue += str(int(tdata[4:8],2))
+            tvalue += str(int(tdata[8:12],2))
+            res += prefix + "%s: %s\n"%(tname,tvalue)
+        elif ttype == "bcddate":
+            tvalue = ""
+            tvalue += str(int(tdata[0:4],2))
+            tvalue += str(int(tdata[4:8],2))
+            tvalue += str(int(tdata[8:12],2))
+            tvalue += str(int(tdata[12:16],2))
+            tvalue += "-"
+            tvalue += str(int(tdata[16:20],2))
+            tvalue += str(int(tdata[20:24],2))
+            tvalue += "-"
+            tvalue += str(int(tdata[24:28],2))
+            tvalue += str(int(tdata[28:32],2))
+            res += prefix + "%s: %s\n"%(tname,tvalue)
+
+        # ascii char
+        elif ttype == "ascii":
+            tvalue = ""
+            for i in range(int(tokenlength /8)):
+                tvalue += chr(int(tdata[i*8:(i+1)*8],2))
+            res += prefix + "%s: \"%s\"\n"%(tname,tvalue)
+
+        # all zeroes
+        elif ttype == "null":
+            #check if it's all 0
+            #TODO also check length
+            if int(tdata,2) == 0:
+                #res += prefix + "%s: %d 0's\n"% (tname,len(tdata))
+                res += ""
+            else:
+                res += prefix + "%s: WARNING not null : %s\n"% (tname,tdata)
+        # complex types
+        elif ttype == "bitmap":
+            #read the bitmap field (starting from the lsb at end)
+            #and interpret data
+            #import pdb; pdb.set_trace()
+            bitmap_schema = token["schema"]
+            res += prefix + tname + " bitmap\n"
+            for i,present in enumerate(reversed(tdata)):
+                if present == "1":
+                    r2,binstring = parse_bin(binstring,[bitmap_schema[i]],prefix+ "  ") 
+                    res += r2
+        elif ttype == "complex":
+            res += prefix + tname +"\n"
+            r2,binstring = parse_bin(binstring,token["schema"],prefix+"  ")
+            res += r2
+
+        # get rid of this one (only reference it as a complex type)
+        elif ttype == "bestcontract":
+            #todo : would be better with bin data
+            # this works here because the size is 24 bits but we should add leading
+            # zeroes so that mod(len(tdata),4) == 0
+            res += parse_hexstring(str(hex(int(tdata,2)))[2:],best_contract_schema,prefix)
+
+        #TODO lookup should be treated as one single function
+        elif ttype == "cardstatus":
+            tvalue = (int(tdata,2))
+            tvalue2 = card_status.get(tvalue,"Unknown")
+            res += prefix + "%s: %s (%s)\n"%(tname,tvalue, tvalue2)
+        elif ttype == "contractstatus":
+            tvalue = (int(tdata,2))
+            tvalue2 = contract_status.get(tvalue,"Unknown")
+            res += prefix + "%s: %s (%s)\n"%(tname,tvalue, tvalue2)
+        elif ttype == "location":
+            tvalue = location.get(int(tdata,2),int(tdata,2))
+            res += prefix + "%s: %s\n"%(tname,tvalue)
+        elif ttype == "zone":
+            tvalue = zones.get(int(tdata,2),int(tdata,2))
+            res += prefix + "%s: %s\n"%(tname,tvalue)
+        elif ttype == "modality":
+            tvalue = modalities.get(int(tdata,2),int(tdata,2))
+            res += prefix + "%s: %s\n"%(tname,tvalue)
+        elif ttype == "transition":
+            tvalue = transitions.get(int(tdata,2),int(tdata,2))
+            res += prefix + "%s: %s\n"%(tname,tvalue)
+        elif ttype == "network":
+            tvalue = networks.get(int(tdata,2),int(tdata,2))
+            res += prefix + "%s: %s\n"%(tname,tvalue)
+        # not a valid type
+        else:
+            res += prefix + "unknown type %s, %s: %s\n"%(ttype,tname,tdata)
+    return (res,binstring)
+        
 
 best_contract_schema = [
             {"length":3, "type": "bitmap", "name":"bc-bitmap", "value":"110"},
@@ -479,6 +604,9 @@ def format_card(card):
                     result +=  ("\t\t%s\n"%(bin2alpha(binstr[3:])))
                 if schem is not None:
                     result += parse_hexstring(r,schem,prefix="\t\t\t|")
+                    if f == ":2000:2010":
+                        r,b = parse_bin(hex2bin(r),event_schema,"\t\t\t>")
+                        result += r
                     
     return result
 
@@ -504,5 +632,7 @@ if __name__ == '__main__':
                     with open(mycard["tagid"]+"-"+mycard["change-time"]+".info","w") as out:
                         out.write(card_info)
             except:
+                import traceback
+                traceback.print_exc()
                 print("\tskipped\n")
 
