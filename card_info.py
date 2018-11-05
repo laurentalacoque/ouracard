@@ -231,8 +231,53 @@ schema = {
             {"length":4, "type": "bin", "name":"telereglement"},
             {"length":6, "type": "bin", "name":"commercial-id"},
             {"length":76, "type": "null", "name":"null"},
-        ],
+        ]
 }
+#TODO remove this eventually
+best_contract_schema = [
+            {"length":3, "type": "bitmap", "name":"bc-bitmap", "value":"110"},
+            {"length":4, "type": "bin", "name":"bc-tariff-expl"},
+            {"length":8, "type": "hex", "name":"bc-tariff-type"},
+            {"length":4, "type": "int", "name":"bc-tariff-priority"},
+            {"length":5, "type": "int", "name":"bc-pointer"},
+]
+
+contract_schema = [
+    {"length":7, "type": "bitmap", "name":"bitmap","value":"1110111"},
+    {"length":8, "type": "network", "name":"provider"},
+    #{"length":50, "type": "bin", "name":"unknown2"},
+    {"length":16, "type": "hex", "name":"contract-fare"},
+    {"length":32, "type": "hex", "name":"contract-serial"},
+    #validity
+    {"length":2, "type": "bitmap", "name":"validity bitmap","value":"11"},
+    {"length":14, "type": "date", "name":"abostart"},
+    {"length":14, "type": "date", "name":"aboend"},
+    {"length":8, "type": "contractstatus", "name":"status"},
+    {"length":26, "type": "bin", "name":"unknown"},
+    {"length":14, "type": "date", "name":"sale-date"},
+    {"length":8, "type": "bin", "name":"unknown"},
+    {"length":8, "type": "int", "name":"country"},
+    {"length":8, "type": "network", "name":"sale-op"},
+
+    {"length":68, "type": "null", "name":"null"},
+]
+
+best_contracts_schema = [
+    {"length":4, "type": "repeat", "name":"count", "schema" : [
+            {"length":3, "type": "bitmap", "name":"bc-bitmap", "schema":[  
+                    {"length":0, "type": "complex", "name":"NetworkId", "schema": [
+                            {"length":12, "type": "bcd3", "name":"country"},
+                            {"length":12, "type": "bcd3", "name":"network"}
+                    ]},
+                    {"length":0, "type": "complex", "name":"Tariff", "schema": [
+                            {"length":4, "type": "bin", "name":"bc-tariff-expl"},
+                            {"length":8, "type": "hex", "name":"bc-tariff-type"},
+                            {"length":4, "type": "int", "name":"bc-tariff-priority"}
+                    ]},
+                    {"length":5, "type": "int", "name":"bc-pointer"}
+            ]}
+    ]}
+]
 
 event_schema = [
     { "description":"Event Date"                              , "length":14  , "type":"date" },
@@ -369,13 +414,12 @@ def parse_bin(binstring,schema,prefix=""):
             res += prefix + tname +"\n"
             r2,binstring = parse_bin(binstring,token["schema"],prefix+"  ")
             res += r2
-
-        # get rid of this one (only reference it as a complex type)
-        elif ttype == "bestcontract":
-            #todo : would be better with bin data
-            # this works here because the size is 24 bits but we should add leading
-            # zeroes so that mod(len(tdata),4) == 0
-            res += parse_hexstring(str(hex(int(tdata,2)))[2:],best_contract_schema,prefix)
+        elif ttype == "repeat":
+            count = int(tdata,2)
+            res += prefix + "List (%d)\n"%count
+            for i in range(count):
+                r2,binstring = parse_bin(binstring,token["schema"],prefix+ str(i)+ " ")
+                res += r2
 
         #TODO lookup should be treated as one single function
         elif ttype == "cardstatus":
@@ -407,13 +451,6 @@ def parse_bin(binstring,schema,prefix=""):
     return (res,binstring)
         
 
-best_contract_schema = [
-            {"length":3, "type": "bitmap", "name":"bc-bitmap", "value":"110"},
-            {"length":4, "type": "bin", "name":"bc-tariff-expl"},
-            {"length":8, "type": "hex", "name":"bc-tariff-type"},
-            {"length":4, "type": "int", "name":"bc-tariff-priority"},
-            {"length":5, "type": "int", "name":"bc-pointer"},
-]
 
 def hex2bin(hexstring):
     assoc={
@@ -604,6 +641,9 @@ def format_card(card):
                     result +=  ("\t\t%s\n"%(bin2alpha(binstr[3:])))
                 if schem is not None:
                     result += parse_hexstring(r,schem,prefix="\t\t\t|")
+                    if f == ":2000:2050":
+                        r,b = parse_bin(hex2bin(r),best_contracts_schema,"\t\t\t>")
+                        result += r
                     if f == ":2000:2010":
                         r,b = parse_bin(hex2bin(r),event_schema,"\t\t\t>")
                         result += r
