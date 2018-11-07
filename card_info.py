@@ -1,7 +1,7 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 printhex = True
-printbin = False
-printstr = False
+printbin = True
+printstr = True
 printalpha = False
 en1545_alpha4 = [ "-","A","B","C","D","E","F","G",
           "H","I","J","K","L","M","N","O",
@@ -23,7 +23,7 @@ networks  = {
 }
 
 location = {
-    16160 : "Place Dr Th�venet (TI)",
+    16160 : "Place Dr Thévenet (TI)",
     12807 : "Gare Grenoble (TI)",
     12806 : "Gare Grenoble (TI)2",
     12820 : "CEA-Cambridge (TI)",
@@ -262,6 +262,28 @@ contract_schema = [
     {"length":8, "type": "bin", "name":"unknown"},
     {"length":8, "type": "int", "name":"country"},
     {"length":8, "type": "network", "name":"sale-op"},
+]
+
+#2020 capv contract ? EXPERIMENT
+contract_schema2 = [
+    {"length":7, "type": "bitmap", "name":"bitmap", "schema":[
+            {"length":7, "type": "network", "name":"provider"},
+            {"length":17, "type": "hex", "name":"contract-fare"},
+            {"length":32, "type": "hex", "name":"contract-serial"},
+            {"length":8,  "type": "int", "name":"passenger-class"},
+            #validity
+            {"length":2, "type": "bitmap", "name":"validity bitmap", "schema":[
+                    {"length":14, "type": "date", "name":"abostart"},
+                    {"length":14, "type": "date", "name":"aboend"},
+            ]},
+            {"length":8, "type": "contractstatus", "name":"status"},
+            {"length":0, "type": "bin", "name":"data"},
+    ]},
+    # specific to 250:502
+    {"length":24, "type": "bin", "name":"unknown"},
+    {"length":8, "type": "hex", "name":"counter-pointer"},
+    {"length":4, "type": "int", "name":"ride-count?"},
+    {"length":59, "type": "bin", "name":"unknown"}
 ]
 
 best_contracts_schema = [
@@ -649,8 +671,11 @@ def format_card(card):
                     if f == ":2000:2050":
                         r,b = parse_bin(hex2bin(r),best_contracts_schema,"\t\t\t>")
                         result += r
-                    if f == ":2000:2020" or f == ":2000:2030":
+                    if f == ":2000:2030":
                         r,b = parse_bin(hex2bin(r),contract_schema,"\t\t\t>")
+                        result += r
+                    if f == ":2000:2020" :
+                        r,b = parse_bin(hex2bin(r),contract_schema2,"\t\t\t>")
                         result += r
                     if f == ":2000:2010":
                         r,b = parse_bin(hex2bin(r),event_schema,"\t\t\t>")
