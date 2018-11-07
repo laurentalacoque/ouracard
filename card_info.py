@@ -286,6 +286,11 @@ contract_schema2 = [
     {"length":59, "type": "bin", "name":"unknown"}
 ]
 
+#Simple counter
+simulated_counter_schema = [
+    {"length":24, "type": "int", "name":"remaining-journeys"}
+]
+
 best_contracts_schema = [
     # counter of 
     {"length":4, "type": "repeat", "name":"count", "schema" : [
@@ -680,7 +685,9 @@ def format_card(card):
                     if f == ":2000:2010":
                         r,b = parse_bin(hex2bin(r),event_schema,"\t\t\t>")
                         result += r
-                    
+                if f == ":2000:202a" or f == ":2000:202b" or f == ":2000:202c" or f == ":2000:202d":
+                    r,b = parse_bin(hex2bin(r),simulated_counter_schema,"\t\t\t>")
+                    result += r
     return result
 
 def print_card(card):
