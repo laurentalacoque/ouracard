@@ -12,9 +12,14 @@ def parse_card(filename, description=""):
         mtime = os.path.getmtime(filename)
         ts = time.localtime(mtime)
 
-        card['change-time'] = time.strftime("%Y-%m-%d-%H%M%S", ts)
+
 
         tree = etree.parse(filename)
+        
+        root = tree.xpath("/card")[0]
+        scan_time_ms = root.get("scanned_at")
+        ts = time.localtime(int(scan_time_ms)/1000)
+        card['change-time'] = time.strftime("%Y-%m-%d-%H%M%S", ts)
 
         application = tree.xpath("/card/applications/application")
         application = application[0]
