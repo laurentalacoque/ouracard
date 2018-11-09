@@ -510,8 +510,8 @@ def hex2bin(hexstring):
 
 def bin2alpha(binstring):
     res=""
-    for i in range(int(len(binstring)/4)):
-       res += en1545_alpha4[int(binstring[4*i:4*(i+1)],2)] 
+    for i in range(int(len(binstring)/5)):
+       res += en1545_alpha4[int(binstring[5*i:5*(i+1)],2)] 
     return res
 
 def hex2str(hexstring):
