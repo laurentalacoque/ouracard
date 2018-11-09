@@ -18,12 +18,12 @@ zones ={
 
 networks  = {
     38 : "Transisere",
-    20 : "CAPV",
+    41 : "CAPV",
     3  : "TAG"
 }
 
 location = {
-    16160 : "Place Dr Thévenet (TI)",
+    14132 : "Place Dr Thevenet (TI)",
     12807 : "Gare Grenoble (TI)",
     12806 : "Gare Grenoble (TI)2",
     12820 : "CEA-Cambridge (TI)",
@@ -267,8 +267,8 @@ contract_schema = [
 #2020 capv contract ? EXPERIMENT
 contract_schema2 = [
     {"length":7, "type": "bitmap", "name":"bitmap", "schema":[
-            {"length":7, "type": "network", "name":"provider"},
-            {"length":17, "type": "hex", "name":"contract-fare"},
+            {"length":8, "type": "network", "name":"provider"},
+            {"length":16, "type": "hex", "name":"contract-fare"},
             {"length":32, "type": "hex", "name":"contract-serial"},
             {"length":8,  "type": "int", "name":"passenger-class"},
             #validity
@@ -280,10 +280,17 @@ contract_schema2 = [
             {"length":0, "type": "bin", "name":"data"},
     ]},
     # specific to 250:502
+    {"length":0, "type":"peekremainder", "name":"remainder"},
     {"length":24, "type": "bin", "name":"unknown"},
     {"length":8, "type": "hex", "name":"counter-pointer"},
     {"length":4, "type": "int", "name":"ride-count?"},
-    {"length":59, "type": "bin", "name":"unknown"}
+    #{"length":59, "type": "bin", "name":"unknown"}
+    {"length":4, "type": "bin", "name":"unknown"},
+    {"length":8, "type": "network", "name":"network"},
+    {"length":11, "type": "bin", "name":"unknown"},
+    {"length":16, "type": "int", "name":"price-cents"},
+
+    {"length":20, "type": "bin", "name":"unknown"},
 ]
 
 #Simple counter
@@ -452,6 +459,11 @@ def parse_bin(binstring,schema,prefix=""):
             for i in range(count):
                 r2,binstring = parse_bin(binstring,token["schema"],prefix+ str(i)+ " ")
                 res += r2
+        #Simple peek of remaining data
+        elif ttype == "peekremainder":
+                #putback bits
+                binstring = tdata + binstring
+                res += "<remainder: " + binstring + "\n"
 
         #TODO lookup should be treated as one single function
         elif ttype == "cardstatus":
@@ -672,7 +684,10 @@ def format_card(card):
                     result +=  ("\t\t%s\n"%(bin2alpha(binstr[2:])))
                     result +=  ("\t\t%s\n"%(bin2alpha(binstr[3:])))
                 if schem is not None:
-                    result += parse_hexstring(r,schem,prefix="\t\t\t|")
+                    try:
+                        result += parse_hexstring(r,schem,prefix="\t\t\t|")
+                    except:
+                        print("error for file "+f)
                     if f == ":2000:2050":
                         r,b = parse_bin(hex2bin(r),best_contracts_schema,"\t\t\t>")
                         result += r
