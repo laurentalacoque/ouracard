@@ -517,7 +517,7 @@ def hex2bin(hexstring):
     }
     binstring = ""
     for c in hexstring:
-        binstring += assoc[c]
+        binstring += assoc[c.lower()]
     return binstring
 
 def bin2alpha(binstring):
