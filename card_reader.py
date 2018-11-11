@@ -34,13 +34,6 @@ CD97_file_list = [
     { "lfi" : "31f0" , "name" : "MPP free"},
 ]
 
-def print_hex_response(sw1,sw2,data):
-    res = "%02X%02X"%(sw1,sw2)
-    res += " "
-    for i in range(len(data)):
-        res += "%02X "%data[i]
-    print (res)
-
 from smartcard.System import readers
 import smartcard.util as scu
 
@@ -63,9 +56,13 @@ def select_application(conn):
     rom_software_version = data[34]
     eeprom_software_version = data[35]
     app_data = scu.toHexString(data[29:37], scu.PACK)
-    print("%s\n%s //  %s\n"%(response,card_id,app_data))
+    #print("%s\n%s //  %s\n"%(response,card_id,app_data))
+    #print("application %d.%d, chip %d by %d (%d mod allow.)"%(application_type,application_subtype,chip_type,issuer,n_mod_allowed))
     
-    print("application %d.%d, chip %d by %d (%d mod allow.)"%(application_type,application_subtype,chip_type,issuer,n_mod_allowed))
+    tagid = card_id[8:]
+    application_data = response
+    
+    return tagid, application_data
 
 def select_file(conn,lfid):
     res = {}
@@ -125,6 +122,22 @@ print("Using :",reader)
 connection = reader.createConnection()
 connection.connect()
 
+# select application
+card = {}
+card["application-type"] = "calypso"
+card["description"] = "scanned"
+card["application-name"] = "1TIC.ICA"
+tagid,application_data = select_application(connection)
+card["application-data"] = application_data
+card["tagid"] = tagid.lower()
+
+import time
+card['change-time'] = time.strftime("%Y-%m-%d-%H%M%S", time.localtime())
+card["filename"] = "Card reader"
+
+card["files"] ={}
+card["files_attr"] ={}
+
 for file_ref in CD97_file_list:
     sfi = file_ref.get("sfi","<>")
     if type(sfi) == int:
@@ -134,10 +147,15 @@ for file_ref in CD97_file_list:
     try:
         file_info = select_file(connection,file_ref["lfi"])
         print("\t%s with %d records (%d bytes) / sfi: 0x%02X"%(file_info["nature"],file_info["records"],file_info["record_size"],file_info["sfi"]))
+        current_file = file_ref["lfi"]
+        card["files"][current_file] = []
+        card["files_attr"][current_file] = file_info
+        
         for i in range(file_info["records"]):
             try:
                 data = scu.toHexString(read_record(connection,i+1),scu.PACK)
                 print("\t\t%s"%data)
+                card["files"][current_file].append(data)
             except Exception as e:
                 print("\t"+ e)
     except:
@@ -145,6 +163,8 @@ for file_ref in CD97_file_list:
 
     print("\n")
 
-print("\n\nSelect Appli")
-select_application(connection)
 
+import json
+basename = card["tagid"] +"-"+ card["change-time"] + ".json"
+with open(basename,'w') as file:
+    file.write(json.dumps(card,indent=4))
