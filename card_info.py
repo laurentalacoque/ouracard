@@ -22,7 +22,7 @@ networks  = {
     3  : "TAG"
 }
 
-location = {
+locations = {
     14132 : "Place Dr Thevenet (TI)",
     12807 : "Gare Grenoble (TI)",
     12806 : "Gare Grenoble (TI)2",
@@ -134,7 +134,7 @@ environment_schema = [
                 {"length":12, "type": "bcd3", "name":"country"},
                 {"length":12, "type": "bcd3", "name":"network"}
         ]},
-        {"length":8, "type": "network", "name":"issuer-network"},
+        {"length":8, "type": "lookup", "as":networks, "name":"issuer-network"},
         {"length":14, "type": "date", "name":"validity"},
         {"length":11, "type": "bin", "name":"pay-method"},
         {"length":16, "type": "hex", "name":"authenticator"},
@@ -145,6 +145,7 @@ environment_schema = [
         ]}
     ]}
 ]
+
 holder_schema = [
     {"length":8, "type": "bitmap", "name":"holder-bitmap", "schema":[
         # Name
@@ -175,7 +176,7 @@ holder_schema = [
                 
         ]},
         {"length":12, "type": "bitmap", "name":"holder-bitmap", "schema":[
-            { "name":"HolderDataCardStatus"            , "length":4   , "type":"cardstatus"},
+            { "name":"HolderDataCardStatus"            , "length":4   , "type":"lookup", "as":card_status},
             { "name":"HolderDataTelereglement"         , "length":4   , "type":"bin"},
             { "name":"HolderDataResidence"             , "length":17  , "type":"bin"},
             { "name":"HolderDataCommercialID"          , "length":6   , "type":"bin"},
@@ -198,7 +199,7 @@ environment_holder_schema = environment_version + environment_schema + holder_sc
 #
 contract_schema = [
     {"length":7, "type": "bitmap", "name":"bitmap", "schema":[
-            {"length":8, "type": "network", "name":"provider"},
+            {"length":8, "type": "lookup", "as":networks, "name":"provider"},
             {"length":16, "type": "hex", "name":"contract-fare"},
             {"length":32, "type": "hex", "name":"contract-serial"},
             {"length":8,  "type": "int", "name":"passenger-class"},
@@ -207,7 +208,7 @@ contract_schema = [
                     {"length":14, "type": "date", "name":"abostart"},
                     {"length":14, "type": "date", "name":"aboend"},
             ]},
-            {"length":8, "type": "contractstatus", "name":"status"},
+            {"length":8, "type": "lookup", "as":contract_status, "name":"status"},
             {"length":0, "type": "bin", "name":"data"},
     ]},
     # specific to 250:502:38
@@ -215,13 +216,13 @@ contract_schema = [
     {"length":14, "type": "date", "name":"sale-date"},
     {"length":8, "type": "bin", "name":"unknown"},
     {"length":8, "type": "int", "name":"country"},
-    {"length":8, "type": "network", "name":"sale-op"},
+    {"length":8, "type": "lookup", "as":networks, "name":"sale-op"},
 ]
 
 #contract for provider 41 (CAPV)
 contract_schema2 = [
     {"length":7, "type": "bitmap", "name":"bitmap", "schema":[
-            {"length":8, "type": "network", "name":"provider"},
+            {"length":8, "type": "lookup", "as":networks, "name":"provider"},
             {"length":16, "type": "hex", "name":"contract-fare"},
             {"length":32, "type": "hex", "name":"contract-serial"},
             {"length":8,  "type": "int", "name":"passenger-class"},
@@ -230,7 +231,7 @@ contract_schema2 = [
                     {"length":14, "type": "date", "name":"abostart"},
                     {"length":14, "type": "date", "name":"aboend"},
             ]},
-            {"length":8, "type": "contractstatus", "name":"status"},
+            {"length":8, "type": "lookup", "as":contract_status, "name":"status"},
             {"length":0, "type": "bin", "name":"data"},
     ]},
     # specific to 250:502:41
@@ -240,7 +241,7 @@ contract_schema2 = [
     {"length":4, "type": "int", "name":"ride-count?"},
     #{"length":59, "type": "bin", "name":"unknown"}
     {"length":4, "type": "bin", "name":"unknown"},
-    {"length":8, "type": "network", "name":"network"},
+    {"length":8, "type": "lookup", "as":networks, "name":"network"},
     {"length":11, "type": "bin", "name":"unknown"},
     {"length":16, "type": "int", "name":"price-cents"},
 
@@ -285,15 +286,15 @@ event_schema = [
         { "description":"EventDisplayData"                    , "length":8   , "type":"undefined"},
         { "description":"EventNetworkId"                      , "length":24  , "type":"undefined"},
         { "description":"EventCode"                           , "length":0   , "type":"complex", "schema" :[
-            {"length":4, "type": "modality", "name":"modality"},
-            {"length":4, "type": "transition", "name":"transition"}
+            {"length":4, "type": "lookup", "as":modalities, "name":"modality"},
+            {"length":4, "type": "lookup", "as":transitions, "name":"transition"}
         ]},
         { "description":"EventResult"                         , "length":8   , "type":"undefined"},
-        { "description":"EventServiceProvider"                , "length":8   , "type":"network"},
+        { "description":"EventServiceProvider"                , "length":8   , "type":"lookup", "as":networks},
         { "description":"EventNotOkCounter"                   , "length":8   , "type":"int"},
         { "description":"EventSerialNumber"                   , "length":24  , "type":"hex"},
-        { "description":"EventDestination"                    , "length":16  , "type":"location"},
-        { "description":"EventLocationId"                     , "length":16  , "type":"location"},
+        { "description":"EventDestination"                    , "length":16  , "type":"lookup","as":locations},
+        { "description":"EventLocationId"                     , "length":16  , "type":"lookup","as":locations},
         { "description":"EventLocationGate"                   , "length":8   , "type":"int"},
         { "description":"EventDevice"                         , "length":16  , "type":"int"},
         { "description":"EventRouteNumber"                    , "length":16  , "type":"int"},
@@ -460,29 +461,11 @@ def parse_bin(binstring,schema,prefix=""):
                 res += "<remainder: " + binstring + "\n"
 
         #TODO lookup should be treated as one single function
-        elif ttype == "cardstatus":
-            tvalue = (int(tdata,2))
-            tvalue2 = card_status.get(tvalue,"Unknown")
-            res += prefix + "%s: %s (%s)\n"%(tname,tvalue, tvalue2)
-        elif ttype == "contractstatus":
-            tvalue = (int(tdata,2))
-            tvalue2 = contract_status.get(tvalue,"Unknown")
-            res += prefix + "%s: %s (%s)\n"%(tname,tvalue, tvalue2)
-        elif ttype == "location":
-            tvalue = location.get(int(tdata,2),int(tdata,2))
-            res += prefix + "%s: %s\n"%(tname,tvalue)
-        elif ttype == "zone":
-            tvalue = zones.get(int(tdata,2),int(tdata,2))
-            res += prefix + "%s: %s\n"%(tname,tvalue)
-        elif ttype == "modality":
-            tvalue = modalities.get(int(tdata,2),int(tdata,2))
-            res += prefix + "%s: %s\n"%(tname,tvalue)
-        elif ttype == "transition":
-            tvalue = transitions.get(int(tdata,2),int(tdata,2))
-            res += prefix + "%s: %s\n"%(tname,tvalue)
-        elif ttype == "network":
-            tvalue = networks.get(int(tdata,2),int(tdata,2))
-            res += prefix + "%s: %s\n"%(tname,tvalue)
+        elif ttype == "lookup":
+            tvalue = int(tdata,2)
+            table  = token["as"]
+            tdesc = table.get(tvalue,"Unknown")
+            res += prefix + "%s: %s (%d)\n"%(tname,tdesc,tvalue)
         # not a valid type
         else:
             res += prefix + "unknown type %s, %s: %s\n"%(ttype,tname,tdata)
