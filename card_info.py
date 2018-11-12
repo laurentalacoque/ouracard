@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
-printhex = True
+ï»¿# -*- coding: utf-8 -*-
+printhex = False
 printbin = False
 printstr = False
 printalpha = False
@@ -18,12 +18,12 @@ zones ={
 
 networks  = {
     38 : "Transisere",
-    20 : "CAPV",
+    41 : "CAPV",
     3  : "TAG"
 }
 
-location = {
-    16160 : "Place Dr Thévenet (TI)",
+locations = {
+    14132 : "Place Dr Thevenet (TI)",
     12807 : "Gare Grenoble (TI)",
     12806 : "Gare Grenoble (TI)2",
     12820 : "CEA-Cambridge (TI)",
@@ -119,127 +119,359 @@ transitions  = {
     7 : "changement (Sortie)"
 }
 
-schema = {
-    ":1000:1004":
-        [
-            {"length":8*8, "type": "ascii", "name":"tag"},
-            {"length":8*8, "type": "null", "name":"null"},
-        ],
-    ":2000:2004":
-        [
-            {"length":8*8, "type": "ascii", "name":"tag"},
-            {"length":8*8, "type": "null", "name":"null"},
-        ],
-    ":3100:3104":
-        [
-            {"length":8*8, "type": "ascii", "name":"tag"},
-            {"length":8*8, "type": "null", "name":"null"},
-        ],
-    ":3f04":
-        [
-            {"length":8*8, "type": "ascii", "name":"tag"},
-            {"length":8*8, "type": "null", "name":"null"},
-        ],
-    ":2000:2050":
-        [
-            {"length":4, "type": "int", "name":"count"},
-            {"length":24, "type": "bestcontract", "name":"contract"},
-            {"length":24, "type": "bin", "name":"contract"},
-            {"length":24, "type": "bin", "name":"contract"},
-            {"length":24, "type": "bin", "name":"contract"},
-            {"length":132, "type": "null", "name":"null"},
-        ],
-    ":2000:2030": #Warning : same as 2020
-        [
-            {"length":7, "type": "bitmap", "name":"bitmap","value":"1110111"},
-            {"length":8, "type": "network", "name":"provider"},
-            #{"length":50, "type": "bin", "name":"unknown2"},
-            {"length":16, "type": "hex", "name":"contract-fare"},
-            {"length":32, "type": "hex", "name":"contract-serial"},
-            #validity
-            {"length":2, "type": "bitmap", "name":"validity bitmap","value":"11"},
-            {"length":14, "type": "date", "name":"abostart"},
-            {"length":14, "type": "date", "name":"aboend"},
-            {"length":8, "type": "contractstatus", "name":"status"},
-            {"length":26, "type": "bin", "name":"unknown"},
-            {"length":14, "type": "date", "name":"sale-date"},
-            {"length":8, "type": "bin", "name":"unknown"},
-            {"length":8, "type": "int", "name":"country"},
-            {"length":8, "type": "network", "name":"sale-op"},
-        
-            {"length":68, "type": "null", "name":"null"},
-        ],
-    ":2000:2020": #Warning : same as 2030
-        [
-            {"length":7, "type": "bitmap", "name":"bitmap","value":"1110111"},
-            {"length":8, "type": "network", "name":"provider"},
-            #{"length":50, "type": "bin", "name":"unknown2"},
-            {"length":16, "type": "hex", "name":"contract-fare"},
-            {"length":32, "type": "hex", "name":"contract-serial"},
-            #validity
-            {"length":2, "type": "bitmap", "name":"validity bitmap","value":"11"},
-            {"length":14, "type": "date", "name":"abostart"},
-            {"length":14, "type": "date", "name":"aboend"},
-            {"length":8, "type": "contractstatus", "name":"status"},
-            {"length":26, "type": "bin", "name":"unknown"},
-            {"length":14, "type": "date", "name":"sale-date"},
-            {"length":8, "type": "bin", "name":"unknown"},
-            {"length":8, "type": "int", "name":"country"},
-            {"length":8, "type": "network", "name":"sale-op"},
-        
-            {"length":68, "type": "null", "name":"null"},
-        ],
-    ":2000:2010":
-        [
-            {"length":14, "type": "date", "name":"date"},
-            {"length":11, "type": "time", "name":"time"},
-            {"length":28, "type": "bitmap", "name":"event-bitmap","value":"1010000000000100100100010100"},
-            {"length":4, "type": "modality", "name":"modality"},
-            {"length":4, "type": "transition", "name":"transition"},
-            {"length":8, "type": "network", "name":"reseau"},
-            {"length":16, "type": "location", "name":"eventloc"},
-            {"length":16, "type": "int", "name":"routenumber"},
-            {"length":16, "type": "int", "name":"coachnumber"},
-            #{"length":10, "type": "bin", "name":"unknown2"},
-            {"length":5, "type": "int", "name":"contract-pointer"},
-            {"length":5, "type": "bitmap", "name":"event-data-bitmap","value":"10110"},
-            {"length":11, "type": "time", "name":"firsttime"},
-            {"length":1, "type": "bin", "name":"is-simulation"},
-            {"length":2, "type": "bin", "name":"direction"},
-            {"length":91, "type": "null", "name":"null"}
-        ],
-    ":2000:2001":
-        [
-            {"length":6, "type": "bin", "name":"app-version"},
-            {"length":7, "type": "bitmap", "name":"bitmap", "value":"0000111"},
-            {"length":12, "type": "bcd3", "name":"country"},
-            {"length":12, "type": "bcd3", "name":"networkid"},
-            {"length":8, "type": "network", "name":"issuer-network"},
-            {"length":14, "type": "date", "name":"validity"},
-            #{"length":98, "type": "bin", "name":"unknown3"},
-            #{"length":10, "type": "bin", "name":"unknown3"},
-            {"length":8, "type": "bitmap", "name":"holder-bitmap", "value":"11000010"},
-            {"length":2, "type": "bitmap", "name":"birth-bitmap", "value":"01"},
-            {"length":32, "type": "bcddate", "name":"date-of-birth"},
-            {"length":4, "type": "bitmap", "name":"profiles-number", "value":"0001"},
-            {"length":3, "type": "bitmap", "name":"profile-bitmap", "value":"110"},
-            {"length":8, "type": "hex", "name":"profile-id"},
-            {"length":14, "type": "date", "name":"profile-date"},
-            # holder data
-            {"length":12, "type": "bitmap", "name":"holder-bitmap", "value":"000000001011"},
-            {"length":4, "type": "cardstatus", "name":"card-status"},
-            {"length":4, "type": "bin", "name":"telereglement"},
-            {"length":6, "type": "bin", "name":"commercial-id"},
-            {"length":76, "type": "null", "name":"null"},
-        ],
-}
-best_contract_schema = [
-            {"length":3, "type": "bitmap", "name":"bc-bitmap", "value":"110"},
-            {"length":4, "type": "bin", "name":"bc-tariff-expl"},
-            {"length":8, "type": "hex", "name":"bc-tariff-type"},
-            {"length":4, "type": "int", "name":"bc-tariff-priority"},
-            {"length":5, "type": "int", "name":"bc-pointer"},
+
+##### Intercode structures
+
+# Environment and holder informations (2001)
+environment_version = [
+    {"length":6, "type": "bin", "name":"app-version"},
 ]
+
+environment_schema = [
+    {"length":7, "type": "bitmap", "name":"bitmap", "schema": [
+        # a Network ID
+        {"length":0, "type": "complex", "name":"NetworkId", "schema": [
+                {"length":12, "type": "bcd3", "name":"country"},
+                {"length":12, "type": "bcd3", "name":"network"}
+        ]},
+        {"length":8, "type": "lookup", "as":networks, "name":"issuer-network"},
+        {"length":14, "type": "date", "name":"validity"},
+        {"length":11, "type": "bin", "name":"pay-method"},
+        {"length":16, "type": "hex", "name":"authenticator"},
+        {"length":32, "type": "hex", "name":"env-select-list"},
+        {"length":2, "type": "bitmap", "schema":[
+            {"length":1, "type": "bin", "name": "env-card-status"},
+            {"length":0, "type": "bin", "name": "env-extra"},
+        ]}
+    ]}
+]
+
+holder_schema = [
+    {"length":8, "type": "bitmap", "name":"holder-bitmap", "schema":[
+        # Name
+        {"length":2, "type": "bitmap", "name":"holder-name", "schema": [
+                {"length":85, "type": "alpha5", "name":"surname"},
+                {"length":85, "type": "alpha5", "name":"name"}
+        ]},
+        # birth
+        {"length":2, "type": "bitmap", "name":"birth-bitmap", "schema":[
+            {"length":32, "type": "bcddate", "name":"date-of-birth"},
+            {"length":115, "type": "alpha5", "name":"place-of-birth"},
+        ]},
+
+        {"length":85, "type": "alpha5", "name":"birthname"},
+        {"length":32, "type": "number", "name":"holder-id"},
+        {"length":24, "type": "hex", "name":"holder-country-alpha"},
+        {"length":32, "type": "hex", "name":"company"},
+        {"length":4, "type": "repeat", "name":"holder profiles", "schema":[
+            {"length":3, "type": "bitmap", "name":"profile-bitmap", "schema":[
+                # a Network ID
+                {"length":0, "type": "complex", "name":"NetworkId", "schema": [
+                    {"length":12, "type": "bcd3", "name":"country"},
+                    {"length":12, "type": "bcd3", "name":"network"}
+                ]},
+                {"length":8, "type":"int","name":"profile-id"},
+                {"length":14, "type":"date","name":"profile-date"} 
+           ]},
+                
+        ]},
+        {"length":12, "type": "bitmap", "name":"holder-bitmap", "schema":[
+            { "name":"HolderDataCardStatus"            , "length":4   , "type":"lookup", "as":card_status},
+            { "name":"HolderDataTelereglement"         , "length":4   , "type":"bin"},
+            { "name":"HolderDataResidence"             , "length":17  , "type":"bin"},
+            { "name":"HolderDataCommercialID"          , "length":6   , "type":"bin"},
+            { "name":"HolderDataWorkPlace"             , "length":17  , "type":"bin"},
+            { "name":"HolderDataStudyPlace"            , "length":17  , "type":"bin"},
+            { "name":"HolderDataSaleDevice"            , "length":16  , "type":"bin"},
+            { "name":"HolderDataAuthenticator"         , "length":16  , "type":"bin"},
+            { "name":"HolderDataProfileStartDate1"     , "length":14  , "type":"bin"},
+            { "name":"HolderDataProfileStartDate2"     , "length":14  , "type":"bin"},
+            { "name":"HolderDataProfileStartDate3"     , "length":14  , "type":"bin"},
+            { "name":"HolderDataProfileStartDate4"     , "length":14  , "type":"bin"},
+        ]}
+    ]}
+]
+
+environment_holder_schema = environment_version + environment_schema + holder_schema
+
+
+#contract schema (data depends on issuer)
+#
+contract_schema = [
+    {"length":7, "type": "bitmap", "name":"bitmap", "schema":[
+            {"length":8, "type": "lookup", "as":networks, "name":"provider"},
+            {"length":16, "type": "hex", "name":"contract-fare"},
+            {"length":32, "type": "hex", "name":"contract-serial"},
+            {"length":8,  "type": "int", "name":"passenger-class"},
+            #validity
+            {"length":2, "type": "bitmap", "name":"validity bitmap", "schema":[
+                    {"length":14, "type": "date", "name":"abostart"},
+                    {"length":14, "type": "date", "name":"aboend"},
+            ]},
+            {"length":8, "type": "lookup", "as":contract_status, "name":"status"},
+            {"length":0, "type": "bin", "name":"data"},
+    ]},
+    # specific to 250:502:38
+    {"length":26, "type": "bin", "name":"unknown"},
+    {"length":14, "type": "date", "name":"sale-date"},
+    {"length":8, "type": "bin", "name":"unknown"},
+    {"length":8, "type": "int", "name":"country"},
+    {"length":8, "type": "lookup", "as":networks, "name":"sale-op"},
+]
+
+#contract for provider 41 (CAPV)
+contract_schema2 = [
+    {"length":7, "type": "bitmap", "name":"bitmap", "schema":[
+            {"length":8, "type": "lookup", "as":networks, "name":"provider"},
+            {"length":16, "type": "hex", "name":"contract-fare"},
+            {"length":32, "type": "hex", "name":"contract-serial"},
+            {"length":8,  "type": "int", "name":"passenger-class"},
+            #validity
+            {"length":2, "type": "bitmap", "name":"validity bitmap", "schema":[
+                    {"length":14, "type": "date", "name":"abostart"},
+                    {"length":14, "type": "date", "name":"aboend"},
+            ]},
+            {"length":8, "type": "lookup", "as":contract_status, "name":"status"},
+            {"length":0, "type": "bin", "name":"data"},
+    ]},
+    # specific to 250:502:41
+    {"length":0, "type":"peekremainder", "name":"remainder"},
+    {"length":24, "type": "bin", "name":"unknown"},
+    {"length":8, "type": "hex", "name":"counter-pointer"},
+    {"length":4, "type": "int", "name":"ride-count?"},
+    #{"length":59, "type": "bin", "name":"unknown"}
+    {"length":4, "type": "bin", "name":"unknown"},
+    {"length":8, "type": "lookup", "as":networks, "name":"network"},
+    {"length":11, "type": "bin", "name":"unknown"},
+    {"length":16, "type": "int", "name":"price-cents"},
+
+    {"length":20, "type": "bin", "name":"unknown"},
+]
+
+#Simple counter
+simulated_counter_schema = [
+    {"length":24, "type": "int", "name":"remaining-journeys"},
+    {"length":52*8, "type": "hex", "name":"data"}
+]
+
+best_contracts_schema = [
+    # counter of 
+    {"length":4, "type": "repeat", "name":"count", "schema" : [
+            # best contracts
+            {"length":3, "type": "bitmap", "name":"bc-bitmap", "schema":[  
+                    # a Network ID
+                    {"length":0, "type": "complex", "name":"NetworkId", "schema": [
+                            {"length":12, "type": "bcd3", "name":"country"},
+                            {"length":12, "type": "bcd3", "name":"network"}
+                    ]},
+                    # a Tariff structure
+                    {"length":0, "type": "complex", "name":"Tariff", "schema": [
+                            {"length":4, "type": "bin", "name":"bc-tariff-expl"},
+                            {"length":8, "type": "hex", "name":"bc-tariff-type"},
+                            {"length":4, "type": "int", "name":"bc-tariff-priority"}
+                    ]},
+                    # a best-contract pointer
+                    {"length":5, "type": "int", "name":"bc-pointer"}
+            ]}
+    ]}
+]
+
+
+#event structure (2010, 2030)
+
+event_schema = [
+    { "description":"Event Date"                              , "length":14  , "type":"date" },
+    { "description":"Event Time"                              , "length":11  , "type":"time" },
+    { "description":"Event"                                   , "length":28  , "type":"bitmap", "schema": [
+        { "description":"EventDisplayData"                    , "length":8   , "type":"undefined"},
+        { "description":"EventNetworkId"                      , "length":24  , "type":"undefined"},
+        { "description":"EventCode"                           , "length":0   , "type":"complex", "schema" :[
+            {"length":4, "type": "lookup", "as":modalities, "name":"modality"},
+            {"length":4, "type": "lookup", "as":transitions, "name":"transition"}
+        ]},
+        { "description":"EventResult"                         , "length":8   , "type":"undefined"},
+        { "description":"EventServiceProvider"                , "length":8   , "type":"lookup", "as":networks},
+        { "description":"EventNotOkCounter"                   , "length":8   , "type":"int"},
+        { "description":"EventSerialNumber"                   , "length":24  , "type":"hex"},
+        { "description":"EventDestination"                    , "length":16  , "type":"lookup","as":locations},
+        { "description":"EventLocationId"                     , "length":16  , "type":"lookup","as":locations},
+        { "description":"EventLocationGate"                   , "length":8   , "type":"int"},
+        { "description":"EventDevice"                         , "length":16  , "type":"int"},
+        { "description":"EventRouteNumber"                    , "length":16  , "type":"int"},
+        { "description":"EventRouteVariant"                   , "length":8   , "type":"int"},
+        { "description":"EventJourneyRun"                     , "length":16  , "type":"int"},
+        { "description":"EventVehicleId"                      , "length":16  , "type":"int"},
+        { "description":"EventVehicleClass"                   , "length":8   , "type":"bin"},
+        { "description":"EventLocationType"                   , "length":5   , "type":"bin"},
+        { "description":"EventEmployee"                       , "length":240 , "type":"hex"},
+        { "description":"EventLocationReference"              , "length":16  , "type":"int"},
+        { "description":"EventJourneyInterchanges"            , "length":8   , "type":"int"},
+        { "description":"EventPeriodJourney"                  , "length":16  , "type":"hex"},
+        { "description":"EventTotalJourneys"                  , "length":16  , "type":"hex"},
+        { "description":"EventJourneyDistance"                , "length":16  , "type":"int"},
+        { "description":"EventPriceAmount"                    , "length":16  , "type":"int"},
+        { "description":"EventPriceUnit"                      , "length":16  , "type":"int"},
+        { "description":"EventContractPointer"                , "length":5   , "type":"int"},
+        { "description":"EventAuthenticator"                  , "length":16  , "type":"hex"},
+        { "description":"EventData"                           , "length":5   , "type":"bitmap", 
+            "schema" : [
+                { "description":"EventDataFirstStamp"         , "length":14  , "type":"date"},
+                { "description":"EventDataFirstStamp"         , "length":11  , "type":"time"},
+                { "description":"EventDataSimulation"         , "length":1   , "type":"int"},
+                { "description":"EventDataTrip"               , "length":2   , "type":"bin"},
+                { "description":"EventDataRouteDirection"     , "length":2   , "type":"int"}
+            ]
+        }
+    ]}
+]
+
+# application name such as 1TIC.ICA (many files ending in 4
+application_name_schema = [
+    {"name": "tag", "length":8*8, "type":"ascii"},   
+    {"name": "info", "length":8*8, "type":"hex"},   
+]
+
+# ICC (:2)
+icc_schema=[
+    {"length":4*8, "type":"hex", "name":"tagid"},
+    {"length":8*8, "type":"hex", "name":"data"}
+]
+
+file_schemas = {
+    ":2": icc_schema,
+    ":1000:1004": application_name_schema,
+    ":2000:2004": application_name_schema,
+    ":3100:3104": application_name_schema,
+    ":3f04":      application_name_schema,
+    ":2000:2001": environment_holder_schema,
+    ":2000:2050": best_contracts_schema,
+    ":2000:2030": contract_schema,
+    ":2000:2020": contract_schema2,
+    ":2000:2010": event_schema,
+    ":2000:2040": event_schema,
+    ":2000:202a": simulated_counter_schema,
+    ":2000:202b": simulated_counter_schema,
+    ":2000:202c": simulated_counter_schema,
+    ":2000:202d": simulated_counter_schema,
+}
+
+def parse_bin(binstring,schema,prefix=""):
+    #formatted response
+    res  = ""
+    for token in schema:
+        ttype   = token["type"]
+        #print(ttype)
+        tlength = token["length"]
+        tdesc   = token.get("description","")
+        tname   = token.get("name",tdesc)
+        tdata   = binstring[:tlength] 
+        #pop binstring
+        binstring   = binstring[tlength:] 
+        
+        # standard types
+        if ttype == "int":
+            tvalue = str(int(tdata,2))
+            res += prefix + "%s: %s\n"%(tname,tvalue)
+        elif ttype == "hex":
+            tvalue = str(hex(int(tdata,2)))[2:]
+            res += prefix + "%s: %sh\n"%(tname,tvalue)
+        elif ttype == "bin":
+            res += prefix + "%s: %sb\n"%(tname,tdata)
+
+        # date and time
+        elif ttype == "date":
+            from datetime import date,timedelta
+            orig = date(1997,1,1)
+            eventdate = orig+timedelta(days = int(tdata,2))
+            tvalue = str(eventdate)
+            res += prefix + "%s: %s\n"%(tname,tvalue)
+        elif ttype == "time":
+            mins = int(tdata,2)
+            hours = int(mins / 60)
+            minutes = mins - 60 * hours
+            tvalue = "%02d:%02d"%(hours,minutes)
+            res += prefix + "%s: %s\n"%(tname,tvalue)
+        elif ttype == "bcd3":
+            tvalue = ""
+            tvalue += str(int(tdata[0:4],2))
+            tvalue += str(int(tdata[4:8],2))
+            tvalue += str(int(tdata[8:12],2))
+            res += prefix + "%s: %s\n"%(tname,tvalue)
+        elif ttype == "bcddate":
+            tvalue = ""
+            tvalue += str(int(tdata[0:4],2))
+            tvalue += str(int(tdata[4:8],2))
+            tvalue += str(int(tdata[8:12],2))
+            tvalue += str(int(tdata[12:16],2))
+            tvalue += "-"
+            tvalue += str(int(tdata[16:20],2))
+            tvalue += str(int(tdata[20:24],2))
+            tvalue += "-"
+            tvalue += str(int(tdata[24:28],2))
+            tvalue += str(int(tdata[28:32],2))
+            res += prefix + "%s: %s\n"%(tname,tvalue)
+
+        # ascii char
+        elif ttype == "ascii":
+            tvalue = ""
+            for i in range(int(tlength /8)):
+                tvalue += chr(int(tdata[i*8:(i+1)*8],2))
+            res += prefix + "%s: \"%s\"\n"%(tname,tvalue)
+        elif ttype == "alpha5":
+            tvalue = ""
+            for i in range(int(len(tdata)/5)):
+                tvalue += en1545_alpha4[int(tdata[5*i:5*(i+1)],2)] 
+            res += prefix + "%s: \"%s\"\n"%(tname,tvalue)
+        
+
+        # all zeroes
+        elif ttype == "null":
+            #check if it's all 0
+            #TODO also check length
+            if int(tdata,2) == 0:
+                #res += prefix + "%s: %d 0's\n"% (tname,len(tdata))
+                res += ""
+            else:
+                res += prefix + "%s: WARNING not null : %s\n"% (tname,tdata)
+        # complex types
+        elif ttype == "bitmap":
+            #read the bitmap field (starting from the lsb at end)
+            #and interpret data
+            #import pdb; pdb.set_trace()
+            bitmap_schema = token["schema"]
+            res += prefix + tname + " bitmap\n"
+            for i,present in enumerate(reversed(tdata)):
+                if present == "1":
+                    r2,binstring = parse_bin(binstring,[bitmap_schema[i]],prefix+ "  ") 
+                    res += r2
+        elif ttype == "complex":
+            res += prefix + tname +"\n"
+            r2,binstring = parse_bin(binstring,token["schema"],prefix+"  ")
+            res += r2
+        elif ttype == "repeat":
+            count = int(tdata,2)
+            res += prefix + "List (%d)\n"%count
+            for i in range(count):
+                r2,binstring = parse_bin(binstring,token["schema"],prefix+ str(i)+ " ")
+                res += r2
+        #Simple peek of remaining data
+        elif ttype == "peekremainder":
+                #putback bits
+                binstring = tdata + binstring
+                res += "<remainder: " + binstring + "\n"
+
+        #TODO lookup should be treated as one single function
+        elif ttype == "lookup":
+            tvalue = int(tdata,2)
+            table  = token["as"]
+            tdesc = table.get(tvalue,"Unknown")
+            res += prefix + "%s: %s (%d)\n"%(tname,tdesc,tvalue)
+        # not a valid type
+        else:
+            res += prefix + "unknown type %s, %s: %s\n"%(ttype,tname,tdata)
+    return (res,binstring)
+        
+
 
 def hex2bin(hexstring):
     assoc={
@@ -262,13 +494,13 @@ def hex2bin(hexstring):
     }
     binstring = ""
     for c in hexstring:
-        binstring += assoc[c]
+        binstring += assoc[c.lower()]
     return binstring
 
 def bin2alpha(binstring):
     res=""
-    for i in range(int(len(binstring)/4)):
-       res += en1545_alpha4[int(binstring[4*i:4*(i+1)],2)] 
+    for i in range(int(len(binstring)/5)):
+       res += en1545_alpha4[int(binstring[5*i:5*(i+1)],2)] 
     return res
 
 def hex2str(hexstring):
@@ -278,135 +510,12 @@ def hex2str(hexstring):
     string = re.sub('[\x00-\x20\x7f-\xff]','`',bastr)
     return " ".join(string)
 
-def parse_hexstring(hexstring, schema,prefix=""):
-    binstring = hex2bin(hexstring)
-    result = "" #prefix + binstring +"\n"
-    for token in schema:
-        try:
-                tokenlength = token["length"]
-                tokendata = binstring[0:tokenlength]
-                binstring = binstring[tokenlength:]
-                tokenname = token["name"]
-                tokentype = token["type"]
-                tokenvalue = ""
-                if tokentype == "int":
-                    tokenvalue = str(int(tokendata,2))
-                    result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
-                elif tokentype == "cardstatus":
-                    tokenvalue = (int(tokendata,2))
-                    tokenvalue2 = card_status.get(tokenvalue,"Unknown")
-                    result += prefix + "%s: %s (%s)\n"%(tokenname,tokenvalue, tokenvalue2)
-                elif tokentype == "contractstatus":
-                    tokenvalue = (int(tokendata,2))
-                    tokenvalue2 = contract_status.get(tokenvalue,"Unknown")
-                    result += prefix + "%s: %s (%s)\n"%(tokenname,tokenvalue, tokenvalue2)
-                elif tokentype == "hex":
-                    tokenvalue = str(hex(int(tokendata,2)))[2:]
-                    result += prefix + "%s: %sh\n"%(tokenname,tokenvalue)
-                elif tokentype == "bitmap":
-                    #TODO we should implement this
-                    #here we only check if the bitmap is valid
-                    #and exit if it's not
-                    if tokendata == token["value"]:
-                        # right bitmap
-                        result += prefix + "\t%s: [%s]\n"%(tokenname,tokendata)
-                    else:
-                        # wrong bitmap, we're dead
-                        result += "!!!!!! Error : wrong bitmap %s (was expecting %s)\n"%(tokendata,token["value"])
-                        return result
-                elif tokentype == "bin":
-                    tokenvalue = ""
-                    bin0 = bin2alpha(tokendata)
-                    bin1 = bin2alpha(tokendata[1:])
-                    bin2 = bin2alpha(tokendata[2:])
-                    bin3 = bin2alpha(tokendata[3:])
-                    if printalpha and len(tokendata) > 4:
-                        result += prefix + "%s: %sb (%s / .%s / ..%s / ...%s)\n"%(tokenname,tokendata, bin0,bin1,bin2,bin3)
-                    else:
-                        result += prefix + "%s: %sb\n"%(tokenname,tokendata)
-                elif tokentype == "date":
-                    from datetime import date,timedelta
-                    orig = date(1997,1,1)
-                    eventdate = orig+timedelta(days = int(tokendata,2))
-                    tokenvalue = str(eventdate)
-                    result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
-                elif tokentype == "time":
-                    mins = int(tokendata,2)
-                    hours = int(mins / 60)
-                    minutes = mins - 60 * hours
-                    tokenvalue = "%02d:%02d"%(hours,minutes)
-                    result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
-                elif tokentype == "location":
-                    tokenvalue = location.get(int(tokendata,2),int(tokendata,2))
-                    result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
-                elif tokentype == "zone":
-                    tokenvalue = zones.get(int(tokendata,2),int(tokendata,2))
-                    result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
-                elif tokentype == "modality":
-                    tokenvalue = modalities.get(int(tokendata,2),int(tokendata,2))
-                    result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
-                elif tokentype == "transition":
-                    tokenvalue = transitions.get(int(tokendata,2),int(tokendata,2))
-                    result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
-                elif tokentype == "network":
-                    tokenvalue = networks.get(int(tokendata,2),int(tokendata,2))
-                    result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
-                elif tokentype == "bcd3":
-                    tokenvalue = ""
-                    tokenvalue += str(int(tokendata[0:4],2))
-                    tokenvalue += str(int(tokendata[4:8],2))
-                    tokenvalue += str(int(tokendata[8:12],2))
-                    result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
-                elif tokentype == "bcddate":
-                    tokenvalue = ""
-                    tokenvalue += str(int(tokendata[0:4],2))
-                    tokenvalue += str(int(tokendata[4:8],2))
-                    tokenvalue += str(int(tokendata[8:12],2))
-                    tokenvalue += str(int(tokendata[12:16],2))
-                    tokenvalue += "-"
-                    tokenvalue += str(int(tokendata[16:20],2))
-                    tokenvalue += str(int(tokendata[20:24],2))
-                    tokenvalue += "-"
-                    tokenvalue += str(int(tokendata[24:28],2))
-                    tokenvalue += str(int(tokendata[28:32],2))
-                    result += prefix + "%s: %s\n"%(tokenname,tokenvalue)
-                elif tokentype == "bestcontract":
-                    #todo : would be better with bin data
-                    # this works here because the size is 24 bits but we should add leading
-                    # zeroes so that mod(len(tokendata),4) == 0
-                    result += parse_hexstring(str(hex(int(tokendata,2)))[2:],best_contract_schema,prefix)
-                elif tokentype == "ascii":
-                    tokenvalue = ""
-                    for i in range(int(tokenlength /8)):
-                        tokenvalue += chr(int(tokendata[i*8:(i+1)*8],2))
-                    result += prefix + "%s: \"%s\"\n"%(tokenname,tokenvalue)
-                elif tokentype == "null":
-                    #check if it's all 0
-                    if int(tokendata,2) == 0:
-                        #result += prefix + "%s: %d 0's\n"% (tokenname,len(tokendata))
-                        result += ""
-                    else:
-                        result += prefix + "%s: WARNING not null : %s\n"% (tokenname,tokendata)
-                else:
-                    result += prefix + "%s: %s\n"%(tokenname,tokendata)
-                #import pdb; pdb.set_trace()
-        except Exception:
-            import traceback
-            traceback.print_exc()
-            print("exception")
-            break
-    return result
-        
-
 
 def format_card(card):
     result =""
     result += ("card <%s> id: %s (%s)\n"% (card['filename'], card['tagid'], card['application-type']))
     result += ("\tdescription:      \"%s\"\n"%card['description'])
     result += ("\tchange-time:      %s\n"%card['change-time'])
-    result += ("\tapplication-data: %s\n"% (card['application-data']))
-    result += ("\t                  %s\n"% (hex2str(card['application-data'])))
-    result += ("\t                  %s\n"% (hex2bin(card['application-data'])))
     files = card['files']
     filelist = files.keys()
     filelist.sort()
@@ -414,11 +523,25 @@ def format_card(card):
         filedesc = filename.get(f,"Unknown")
         result += "_________________________________________________________________\n"
         result += ("\t%s (%s)\n" % (f,filedesc))
-        schem = schema.get(f)
+        binschem = file_schemas.get(f)
         for r in files[f]:
             if int(r,16) == 0:
-                result += ("\t\tnull (%d B, %d b)\n"%(int(len(r)/2),len(r)*4))
+                result += ("\t\t000... (%d)\n"%(int(len(r)/2)))
             else:
+                if binschem is not None:
+                    try:
+                        result += "\t\t\\\n"
+                        r2,b = parse_bin(hex2bin(r),binschem,"\t\t| ")
+                        result += r2
+                        if len(b)>0 and int(b,2) != 0:
+                            # some bits remain
+                            result += "\t\t<remainder>" + b + "\n" 
+                    except Exception as e:
+                        print("error for file "+f)
+                        import traceback; traceback.print_exc()
+                else:
+                    result += "\t\t%s\n"%r
+
                 if printhex: result +=  ("\t\t%s\n"%(r))
                 if printstr: result +=  ("\t\t%s\n"%(hex2str(r)))
                 if printbin: result +=  ("\t\t%s\n"%(hex2bin(r)))
@@ -428,9 +551,8 @@ def format_card(card):
                     result +=  ("\t\t%s\n"%(bin2alpha(binstr[1:])))
                     result +=  ("\t\t%s\n"%(bin2alpha(binstr[2:])))
                     result +=  ("\t\t%s\n"%(bin2alpha(binstr[3:])))
-                if schem is not None:
-                    result += parse_hexstring(r,schem,prefix="\t\t\t|")
-                    
+                    result +=  ("\t\t%s\n"%(bin2alpha(binstr[4:])))
+
     return result
 
 def print_card(card):
@@ -455,5 +577,7 @@ if __name__ == '__main__':
                     with open(mycard["tagid"]+"-"+mycard["change-time"]+".info","w") as out:
                         out.write(card_info)
             except:
+                import traceback
+                traceback.print_exc()
                 print("\tskipped\n")
 
