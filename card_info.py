@@ -59,6 +59,34 @@ contract_status = {
         127:"Invalid et reimbursed",
         255:"Deletable",
 } #courtesy CalypsoInspector
+
+full_path = {
+    "1004" : ":1000:1004",
+    "1014" : ":1000:1014",
+    "1015" : ":1000:1015",
+    "2001" : ":2000:2001",
+    "2002" : ":2000:2002",
+    "2004" : ":2000:2004",
+    "2010" : ":2000:2010",
+    "2020" : ":2000:2020",
+    "2030" : ":2000:2030",
+    "2040" : ":2000:2040",
+    "2050" : ":2000:2050",
+    "202a" : ":2000:202a",
+    "202b" : ":2000:202b",
+    "202c" : ":2000:202c",
+    "202d" : ":2000:202d",
+    "3104" : ":3100:3104",
+    "3102" : ":3100:3102",
+    "3115" : ":3100:3115",
+    "3120" : ":3100:3120",
+    "3113" : ":3100:3113",
+    "3123" : ":3100:3123",
+    "3133" : ":3100:3133",
+    "3169" : ":3100:3169",
+    "3150" : ":3100:3150",
+    "31f0" : ":3100:31f0",
+}
     
 filename = {
     ":3f04"     :"AID",
@@ -520,10 +548,15 @@ def format_card(card):
     filelist = files.keys()
     filelist.sort()
     for f in filelist:
-        filedesc = filename.get(f,"Unknown")
+        #if it's the short filename, get the full one
+        fn = f
+        if filename.get(fn) is None:
+            fn = full_path.get(fn,fn)
+
+        filedesc = filename.get(fn,"Unknown")
         result += "_________________________________________________________________\n"
-        result += ("\t%s (%s)\n" % (f,filedesc))
-        binschem = file_schemas.get(f)
+        result += ("\t%s (%s)\n" % (fn,filedesc))
+        binschem = file_schemas.get(fn)
         for r in files[f]:
             if int(r,16) == 0:
                 result += ("\t\t000... (%d)\n"%(int(len(r)/2)))
