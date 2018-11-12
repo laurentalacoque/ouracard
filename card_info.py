@@ -242,6 +242,80 @@ best_contract_schema = [
             {"length":5, "type": "int", "name":"bc-pointer"},
 ]
 
+# Environment and holder informations (2001)
+environment_version = [
+    {"length":6, "type": "bin", "name":"app-version"},
+]
+
+environment_schema = [
+    {"length":7, "type": "bitmap", "name":"bitmap", "schema": [
+        # a Network ID
+        {"length":0, "type": "complex", "name":"NetworkId", "schema": [
+                {"length":12, "type": "bcd3", "name":"country"},
+                {"length":12, "type": "bcd3", "name":"network"}
+        ]},
+        {"length":8, "type": "network", "name":"issuer-network"},
+        {"length":14, "type": "date", "name":"validity"},
+        {"length":11, "type": "bin", "name":"pay-method"},
+        {"length":16, "type": "hex", "name":"authenticator"},
+        {"length":32, "type": "hex", "name":"env-select-list"},
+        {"length":2, "type": "bitmap", "schema":[
+            {"length":1, "type": "bin", "name": "env-card-status"},
+            {"length":0, "type": "bin", "name": "env-extra"},
+        ]}
+    ]}
+]
+holder_schema = [
+    {"length":8, "type": "bitmap", "name":"holder-bitmap", "schema":[
+        # Name
+        {"length":2, "type": "bitmap", "name":"holder-name", "schema": [
+                {"length":85, "type": "alpha5", "name":"surname"},
+                {"length":85, "type": "alpha5", "name":"name"}
+        ]},
+        # birth
+        {"length":2, "type": "bitmap", "name":"birth-bitmap", "schema":[
+            {"length":32, "type": "bcddate", "name":"date-of-birth"},
+            {"length":115, "type": "alpha5", "name":"place-of-birth"},
+        ]},
+
+        {"length":85, "type": "alpha5", "name":"birthname"},
+        {"length":32, "type": "number", "name":"holder-id"},
+        {"length":24, "type": "hex", "name":"holder-country-alpha"},
+        {"length":32, "type": "hex", "name":"company"},
+        {"length":4, "type": "repeat", "name":"holder profiles", "schema":[
+            {"length":3, "type": "bitmap", "name":"profile-bitmap", "schema":[
+                # a Network ID
+                {"length":0, "type": "complex", "name":"NetworkId", "schema": [
+                    {"length":12, "type": "bcd3", "name":"country"},
+                    {"length":12, "type": "bcd3", "name":"network"}
+                ]},
+                {"length":8, "type":"int","name":"profile-id"},
+                {"length":14, "type":"date","name":"profile-date"} 
+           ]},
+                
+        ]},
+        {"length":12, "type": "bitmap", "name":"holder-bitmap", "schema":[
+            { "name":"HolderDataCardStatus"            , "length":4   , "type":"cardstatus"},
+            { "name":"HolderDataTelereglement"         , "length":4   , "type":"bin"},
+            { "name":"HolderDataResidence"             , "length":17  , "type":"bin"},
+            { "name":"HolderDataCommercialID"          , "length":6   , "type":"bin"},
+            { "name":"HolderDataWorkPlace"             , "length":17  , "type":"bin"},
+            { "name":"HolderDataStudyPlace"            , "length":17  , "type":"bin"},
+            { "name":"HolderDataSaleDevice"            , "length":16  , "type":"bin"},
+            { "name":"HolderDataAuthenticator"         , "length":16  , "type":"bin"},
+            { "name":"HolderDataProfileStartDate1"     , "length":14  , "type":"bin"},
+            { "name":"HolderDataProfileStartDate2"     , "length":14  , "type":"bin"},
+            { "name":"HolderDataProfileStartDate3"     , "length":14  , "type":"bin"},
+            { "name":"HolderDataProfileStartDate4"     , "length":14  , "type":"bin"},
+        ]}
+    ]}
+]
+
+environment_holder_schema = environment_version + environment_schema + holder_schema
+
+
+#contract schema (data depends on issuer)
+#
 contract_schema = [
     {"length":7, "type": "bitmap", "name":"bitmap", "schema":[
             {"length":8, "type": "network", "name":"provider"},
@@ -256,7 +330,7 @@ contract_schema = [
             {"length":8, "type": "contractstatus", "name":"status"},
             {"length":0, "type": "bin", "name":"data"},
     ]},
-    # specific to 250:502
+    # specific to 250:502:38
     {"length":26, "type": "bin", "name":"unknown"},
     {"length":14, "type": "date", "name":"sale-date"},
     {"length":8, "type": "bin", "name":"unknown"},
@@ -264,7 +338,7 @@ contract_schema = [
     {"length":8, "type": "network", "name":"sale-op"},
 ]
 
-#2020 capv contract ? EXPERIMENT
+#contract for provider 41 (CAPV)
 contract_schema2 = [
     {"length":7, "type": "bitmap", "name":"bitmap", "schema":[
             {"length":8, "type": "network", "name":"provider"},
@@ -279,7 +353,7 @@ contract_schema2 = [
             {"length":8, "type": "contractstatus", "name":"status"},
             {"length":0, "type": "bin", "name":"data"},
     ]},
-    # specific to 250:502
+    # specific to 250:502:41
     {"length":0, "type":"peekremainder", "name":"remainder"},
     {"length":24, "type": "bin", "name":"unknown"},
     {"length":8, "type": "hex", "name":"counter-pointer"},
@@ -319,6 +393,9 @@ best_contracts_schema = [
             ]}
     ]}
 ]
+
+
+#event structure (2010, 2030)
 
 event_schema = [
     { "description":"Event Date"                              , "length":14  , "type":"date" },
@@ -365,6 +442,36 @@ event_schema = [
         }
     ]}
 ]
+
+# application name such as 1TIC.ICA (many files ending in 4
+application_name_schema = [
+    {"name": "tag", "length":8*8, "type":"ascii"},   
+    {"name": "info", "length":8*8, "type":"hex"},   
+]
+
+# ICC (:2)
+icc_schema=[
+    {"length":4*8, "type":"hex", "name":"tagid"},
+    {"length":8*8, "type":"hex", "name":"data"}
+]
+
+file_schemas = {
+    ":2": icc_schema,
+    ":1000:1004": application_name_schema,
+    ":2000:2004": application_name_schema,
+    ":3100:3104": application_name_schema,
+    ":3f04":      application_name_schema,
+    ":2000:2001": environment_holder_schema,
+    ":2000:2050": best_contracts_schema,
+    ":2000:2030": contract_schema,
+    ":2000:2020": contract_schema2,
+    ":2000:2010": event_schema,
+    ":2000:2040": event_schema,
+    ":2000:202a": simulated_counter_schema,
+    ":2000:202b": simulated_counter_schema,
+    ":2000:202c": simulated_counter_schema,
+    ":2000:202d": simulated_counter_schema,
+}
 
 def parse_bin(binstring,schema,prefix=""):
     #formatted response
@@ -425,9 +532,15 @@ def parse_bin(binstring,schema,prefix=""):
         # ascii char
         elif ttype == "ascii":
             tvalue = ""
-            for i in range(int(tokenlength /8)):
+            for i in range(int(tlength /8)):
                 tvalue += chr(int(tdata[i*8:(i+1)*8],2))
             res += prefix + "%s: \"%s\"\n"%(tname,tvalue)
+        elif ttype == "alpha5":
+            tvalue = ""
+            for i in range(int(len(tdata)/5)):
+                tvalue += en1545_alpha4[int(tdata[5*i:5*(i+1)],2)] 
+            res += prefix + "%s: \"%s\"\n"%(tname,tvalue)
+        
 
         # all zeroes
         elif ttype == "null":
@@ -670,6 +783,7 @@ def format_card(card):
         result += "_________________________________________________________________\n"
         result += ("\t%s (%s)\n" % (f,filedesc))
         schem = schema.get(f)
+        binschem = file_schemas.get(f)
         for r in files[f]:
             if int(r,16) == 0:
                 result += ("\t\tnull (%d B, %d b)\n"%(int(len(r)/2),len(r)*4))
@@ -688,20 +802,9 @@ def format_card(card):
                         result += parse_hexstring(r,schem,prefix="\t\t\t|")
                     except:
                         print("error for file "+f)
-                    if f == ":2000:2050":
-                        r,b = parse_bin(hex2bin(r),best_contracts_schema,"\t\t\t>")
-                        result += r
-                    if f == ":2000:2030":
-                        r,b = parse_bin(hex2bin(r),contract_schema,"\t\t\t>")
-                        result += r
-                    if f == ":2000:2020" :
-                        r,b = parse_bin(hex2bin(r),contract_schema2,"\t\t\t>")
-                        result += r
-                    if f == ":2000:2010":
-                        r,b = parse_bin(hex2bin(r),event_schema,"\t\t\t>")
-                        result += r
-                if f == ":2000:202a" or f == ":2000:202b" or f == ":2000:202c" or f == ":2000:202d":
-                    r,b = parse_bin(hex2bin(r),simulated_counter_schema,"\t\t\t>")
+                # new scheme
+                if binschem is not None:
+                    r,b = parse_bin(hex2bin(r),binschem,"\t\t\t>")
                     result += r
     return result
 
