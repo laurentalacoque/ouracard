@@ -227,7 +227,7 @@ environment_holder_schema = environment_version + environment_schema + holder_sc
 #
 contract_schema = [
     {"length":7, "type": "bitmap", "name":"bitmap", "schema":[
-            {"length":8, "type": "lookup", "as":networks, "name":"provider"},
+            {"length":8, "type": "lookup", "as":networks, "name":"provider", "extended-data-id": True},
             {"length":16, "type": "hex", "name":"contract-fare"},
             {"length":32, "type": "hex", "name":"contract-serial"},
             {"length":8,  "type": "int", "name":"passenger-class"},
@@ -237,44 +237,38 @@ contract_schema = [
                     {"length":14, "type": "date", "name":"aboend"},
             ]},
             {"length":8, "type": "lookup", "as":contract_status, "name":"status"},
-            {"length":0, "type": "bin", "name":"data"},
+            {"length":0, "type": "contractextradata", "name":"data"},
     ]},
-    # specific to 250:502:38
-    {"length":26, "type": "bin", "name":"unknown"},
-    {"length":14, "type": "date", "name":"sale-date"},
-    {"length":8, "type": "bin", "name":"unknown"},
-    {"length":8, "type": "int", "name":"country"},
-    {"length":8, "type": "lookup", "as":networks, "name":"sale-op"},
 ]
 
-#contract for provider 41 (CAPV)
-contract_schema2 = [
-    {"length":7, "type": "bitmap", "name":"bitmap", "schema":[
-            {"length":8, "type": "lookup", "as":networks, "name":"provider"},
-            {"length":16, "type": "hex", "name":"contract-fare"},
-            {"length":32, "type": "hex", "name":"contract-serial"},
-            {"length":8,  "type": "int", "name":"passenger-class"},
-            #validity
-            {"length":2, "type": "bitmap", "name":"validity bitmap", "schema":[
-                    {"length":14, "type": "date", "name":"abostart"},
-                    {"length":14, "type": "date", "name":"aboend"},
-            ]},
-            {"length":8, "type": "lookup", "as":contract_status, "name":"status"},
-            {"length":0, "type": "bin", "name":"data"},
-    ]},
-    # specific to 250:502:41
-    {"length":0, "type":"peekremainder", "name":"remainder"},
-    {"length":24, "type": "bin", "name":"unknown"},
-    {"length":8, "type": "hex", "name":"counter-pointer"},
-    {"length":4, "type": "int", "name":"ride-count?"},
-    #{"length":59, "type": "bin", "name":"unknown"}
-    {"length":4, "type": "bin", "name":"unknown"},
-    {"length":8, "type": "lookup", "as":networks, "name":"network"},
-    {"length":11, "type": "bin", "name":"unknown"},
-    {"length":16, "type": "int", "name":"price-cents"},
 
-    {"length":20, "type": "bin", "name":"unknown"},
-]
+contract_extra_data = {
+    38 : [
+        # specific to 250:502:38
+        {"length":26, "type": "bin", "name":"unknown"},
+        {"length":14, "type": "date", "name":"sale-date"},
+        {"length":8, "type": "bin", "name":"unknown"},
+        {"length":8, "type": "int", "name":"country"},
+        {"length":8, "type": "lookup", "as":networks, "name":"sale-op"},
+    ],
+    41 : [
+        # specific to 250:502:41
+        {"length":0, "type":"peekremainder", "name":"remainder"},
+        {"length":24, "type": "bin", "name":"unknown"},
+        {"length":8, "type": "hex", "name":"counter-pointer"},
+        {"length":4, "type": "int", "name":"ride-count?"},
+        #{"length":59, "type": "bin", "name":"unknown"}
+        {"length":4, "type": "bin", "name":"unknown"},
+        {"length":8, "type": "lookup", "as":networks, "name":"network"},
+        {"length":11, "type": "bin", "name":"unknown"},
+        {"length":16, "type": "int", "name":"price-cents"},
+
+        {"length":20, "type": "bin", "name":"unknown"},
+    ],
+    "default" : [
+        {"length":0, "type":"peekremainder", "name":"remainder"},
+    ]
+}
 
 #Simple counter
 simulated_counter_schema = [
@@ -374,7 +368,7 @@ file_schemas = {
     ":2000:2001": environment_holder_schema,
     ":2000:2050": best_contracts_schema,
     ":2000:2030": contract_schema,
-    ":2000:2020": contract_schema2,
+    ":2000:2020": contract_schema,
     ":2000:2010": event_schema,
     ":2000:2040": event_schema,
     ":2000:202a": simulated_counter_schema,
@@ -383,7 +377,7 @@ file_schemas = {
     ":2000:202d": simulated_counter_schema,
 }
 
-def parse_bin(binstring,schema,prefix=""):
+def parse_bin(binstring,schema,prefix="",extended_data_id="default"):
     #formatted response
     res  = ""
     for token in schema:
@@ -393,6 +387,9 @@ def parse_bin(binstring,schema,prefix=""):
         tdesc   = token.get("description","")
         tname   = token.get("name",tdesc)
         tdata   = binstring[:tlength] 
+        if token.get("extended-data-id"):
+            #we should read extra data based on the issuer-id
+            extended_data_id = int(tdata,2)
         #pop binstring
         binstring   = binstring[tlength:] 
         
@@ -470,17 +467,23 @@ def parse_bin(binstring,schema,prefix=""):
             res += prefix + tname + " bitmap\n"
             for i,present in enumerate(reversed(tdata)):
                 if present == "1":
-                    r2,binstring = parse_bin(binstring,[bitmap_schema[i]],prefix+ "  ") 
+                    r2,binstring,extended_data_id = parse_bin(binstring,[bitmap_schema[i]],prefix+ "  ",extended_data_id) 
                     res += r2
         elif ttype == "complex":
             res += prefix + tname +"\n"
-            r2,binstring = parse_bin(binstring,token["schema"],prefix+"  ")
+            r2,binstring,extended_data_id = parse_bin(binstring,token["schema"],prefix+"  ",extended_data_id)
             res += r2
         elif ttype == "repeat":
             count = int(tdata,2)
             res += prefix + "List (%d)\n"%count
             for i in range(count):
-                r2,binstring = parse_bin(binstring,token["schema"],prefix+ str(i)+ " ")
+                r2,binstring,extended_data_id = parse_bin(binstring,token["schema"],prefix+ str(i)+ " ",extended_data_id)
+                res += r2
+        elif ttype == "contractextradata":
+            #we should read extra data based on the issuer-id
+            schema = contract_extra_data.get(extended_data_id)
+            if schema is not None:
+                r2, binstring,extended_data_id = parse_bin(binstring,schema,prefix+ "  ",extended_data_id)
                 res += r2
         #Simple peek of remaining data
         elif ttype == "peekremainder":
@@ -497,7 +500,7 @@ def parse_bin(binstring,schema,prefix=""):
         # not a valid type
         else:
             res += prefix + "unknown type %s, %s: %s\n"%(ttype,tname,tdata)
-    return (res,binstring)
+    return (res,binstring,extended_data_id)
         
 
 
@@ -564,7 +567,7 @@ def format_card(card):
                 if binschem is not None:
                     try:
                         result += "\t\t\\\n"
-                        r2,b = parse_bin(hex2bin(r),binschem,"\t\t| ")
+                        r2,b,d = parse_bin(hex2bin(r),binschem,"\t\t| ")
                         result += r2
                         if len(b)>0 and int(b,2) != 0:
                             # some bits remain
