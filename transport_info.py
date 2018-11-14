@@ -503,6 +503,7 @@ def parse_card(card):
     for bc_pointer in parsed["best-contracts"].keys():
         file_id,recnum,counter_id = bc_pointer_to_idcontract_record_idcounter[bc_pointer]
 
+        # Get contract data
         data = card["files"].get(file_id)
         if data is None:
             data = card["files"].get(file_id.split(":")[2])
@@ -511,14 +512,29 @@ def parse_card(card):
         except:
             import pdb; pdb.set_trace()
 
-
+        # Choose schema accordingly
         contract_type = int(parsed["best-contracts"][bc_pointer]["bc-tariff-type"],16)
         schema = contract_schemas.get(contract_type)
         if schema is None:
             schema = contract_schemas.get("default")
 
+        # Parse data
         contract,binstring,context = parse_schema(binstring,schema) 
         parsed["contracts"][bc_pointer] = contract
+
+        if counter_id is not None:
+            # Get counter data
+            data = card["files"].get(counter_id)
+            if data is None:
+                data = card["files"].get(counter_id.split(":")[2].upper())
+            try:
+                binstring = hex2bin(data[0])
+            except:
+                import pdb; pdb.set_trace()
+            # Parse counter
+            counter,binstring,context = parse_schema(binstring,simulated_counter_schema)
+            # Add this to the contract
+            parsed["contracts"][bc_pointer]["counter"]=counter
         
 
     #import pdb; pdb.set_trace()
