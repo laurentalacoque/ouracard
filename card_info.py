@@ -228,8 +228,9 @@ environment_holder_schema = environment_version + environment_schema + holder_sc
 #contract schema (data depends on issuer)
 #
 contract_schema = [
+    {"length":0, "type": "peekremainder"},
     {"length":7, "type": "bitmap", "name":"bitmap", "schema":[
-            {"length":8, "type": "lookup", "as":networks, "name":"provider", "extended-data-id": True},
+            {"length":8, "type": "lookup", "as":networks, "name":"provider", "extended-data-id": True}, #extended-data-id stores the current number of the issuer to interpret extended data
             {"length":16, "type": "hex", "name":"contract-fare"},
             {"length":32, "type": "hex", "name":"contract-serial"},
             {"length":8,  "type": "int", "name":"passenger-class"},
@@ -243,7 +244,55 @@ contract_schema = [
     ]},
 ]
 
+#schema based on best-contracts Tariff type
+contract_schemas = {
+    0x20: [ #CAPV, Transisère, TAG abo
+        {"length":0, "type": "peekremainder"},
+        {"length":7, "type": "bitmap", "name":"bitmap", "schema":[
+                {"length":8, "type": "lookup", "as":networks, "name":"provider", "extended-data-id": True}, #extended-data-id stores the current number of the issuer to interpret extended data
+                {"length":16, "type": "hex", "name":"contract-fare"},
+                {"length":32, "type": "hex", "name":"contract-serial"},
+                {"length":8,  "type": "int", "name":"passenger-class"},
+                #validity
+                {"length":2, "type": "bitmap", "name":"validity bitmap", "schema":[
+                        {"length":14, "type": "date", "name":"abostart"},
+                        {"length":14, "type": "date", "name":"aboend"},
+                ]},
+                {"length":8, "type": "lookup", "as":contract_status, "name":"status"},
+                {"length":0, "type": "contractextradata", "name":"data"},
+        ]},
+    ],
+    0x50: [ #TAG tickets
+        {"length":0, "type": "peekremainder"},
+        {"length":7, "type": "bin", "name":"bitmap?"},
+        {"length":8, "type": "lookup", "as":networks, "name":"provider", "extended-data-id": True},
+        {"length":8, "type": "lookup", "as":contract_status, "name":"status?"},
+        {"length":9, "type": "bin", "name":"unknown"},
+        {"length":14, "type": "date", "name":"purchase-date"},
+        {"length":11, "type": "time", "name":"purchase-time"},
+        {"length":97, "type": "bin", "name":"unknown"},
+    ],
+    
+    "default": [ #default contract (unknown)
+        {"length":29*8, "type":"bin", "name":"undetermined-contract-format"}
+    ]
+}
 
+bc_pointer_to_idcontract_record_idcounter = {
+    1:("2000:2020",0,"2000:202a"),
+    2:("2000:2020",1,"2000:202b"),
+    3:("2000:2020",2,"2000:202c"),
+    4:("2000:2020",3,"2000:202d"),
+    5:("2000:2030",0,None),
+    6:("2000:2030",1,None),
+    7:("2000:2030",2,None),
+    8:("2000:2030",3,None),
+}
+    
+    
+
+
+# This defaults to "default" and is replaced by extended_data_id if a field was marked before
 contract_extra_data = {
     38 : [
         # specific to 250:502:38
@@ -369,8 +418,8 @@ file_schemas = {
     ":3f04":      application_name_schema,
     ":2000:2001": environment_holder_schema,
     ":2000:2050": best_contracts_schema,
-    ":2000:2030": contract_schema,
-    ":2000:2020": contract_schema,
+    ":2000:2030": contract_schemas[0x20],
+    ":2000:2020": contract_schemas[0x20],
     ":2000:2010": event_schema,
     ":2000:2040": event_schema,
     ":2000:202a": simulated_counter_schema,
@@ -592,9 +641,6 @@ def format_card(card):
                     result +=  ("\t\t%s\n"%(bin2alpha(binstr[4:])))
 
     return result
-
-def print_card(card):
-    print(format_card(card))
 
 
 if __name__ == '__main__':
