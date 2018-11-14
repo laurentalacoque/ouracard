@@ -42,7 +42,7 @@ holder_schema = [
         {"length":32, "type": "number", "name":"holder-id"},
         {"length":24, "type": "hex", "name":"holder-country-alpha"},
         {"length":32, "type": "hex", "name":"company"},
-        {"length":4, "type": "repeat", "name":"holder profiles", "schema":[
+        {"length":4, "type": "repeat", "name":"HolderProfiles", "schema":[
             {"length":3, "type": "bitmap", "name":"profile-bitmap", "schema":[
                 # a Network ID
                 {"length":0, "type": "complex", "name":"NetworkId", "schema": [
@@ -96,7 +96,7 @@ contract_schema = [
 #schema based on best-contracts Tariff type
 contract_schemas = {
     0x20: [ #CAPV, Transisère, TAG abo
-        {"length":0, "type": "peekremainder"},
+        {"length":0, "type": "peekremainder","name":"peek"},
         {"length":7, "type": "bitmap", "name":"bitmap", "schema":[
                 {"length":8, "type": "lookup", "as":networks, "name":"provider", "extended-data-id": True}, #extended-data-id stores the current number of the issuer to interpret extended data
                 {"length":16, "type": "hex", "name":"contract-fare"},
@@ -112,7 +112,7 @@ contract_schemas = {
         ]},
     ],
     0x50: [ #TAG tickets
-        {"length":0, "type": "peekremainder"},
+        {"length":0, "type": "peekremainder","name":"peek"},
         {"length":7, "type": "bin", "name":"bitmap?"},
         {"length":8, "type": "lookup", "as":networks, "name":"provider", "extended-data-id": True},
         {"length":8, "type": "lookup", "as":contract_status, "name":"status?"},
@@ -128,14 +128,14 @@ contract_schemas = {
 }
 
 bc_pointer_to_idcontract_record_idcounter = {
-    1:("2000:2020",0,"2000:202a"),
-    2:("2000:2020",1,"2000:202b"),
-    3:("2000:2020",2,"2000:202c"),
-    4:("2000:2020",3,"2000:202d"),
-    5:("2000:2030",0,None),
-    6:("2000:2030",1,None),
-    7:("2000:2030",2,None),
-    8:("2000:2030",3,None),
+    1:(":2000:2020",0,":2000:202a"),
+    2:(":2000:2020",1,":2000:202b"),
+    3:(":2000:2020",2,":2000:202c"),
+    4:(":2000:2020",3,":2000:202d"),
+    5:(":2000:2030",0,None),
+    6:(":2000:2030",1,None),
+    7:(":2000:2030",2,None),
+    8:(":2000:2030",3,None),
 }
     
     
@@ -178,7 +178,7 @@ simulated_counter_schema = [
 
 best_contracts_schema = [
     # counter of 
-    {"length":4, "type": "repeat", "name":"count", "schema" : [
+    {"length":4, "type": "repeat", "name":"bestContracts", "schema" : [
             # best contracts
             {"length":3, "type": "bitmap", "name":"bc-bitmap", "schema":[  
                     # a Network ID

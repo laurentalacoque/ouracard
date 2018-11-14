@@ -83,8 +83,12 @@ filename = {
 
 }    
 
-def parse_schema(binstring,schema,context={}):
-    res=[]
+def parse_schema(binstring,schema,context={},asdict=True):
+    if asdict:
+        res={}
+    else:
+        res=[]
+
     for token in schema:
        
         ttype   = token["type"]
@@ -108,13 +112,13 @@ def parse_schema(binstring,schema,context={}):
         
         # standard types
         if ttype == "int":
-            tvalue = str(int(tdata,2))
-            res["value"]=tvalue
+            tvalue = int(tdata,2)
+            elem["value"]=tvalue
         elif ttype == "hex":
             tvalue = str(hex(int(tdata,2)))[2:]
-            res["value"]=tvalue
+            elem["value"]=tvalue
         elif ttype == "bin":
-            res["value"]=tdata
+            elem["value"]=tdata
 
         # date and time
         elif ttype == "date":
@@ -122,21 +126,22 @@ def parse_schema(binstring,schema,context={}):
             orig = date(1997,1,1)
             eventdate = orig+timedelta(days = int(tdata,2))
             tvalue = str(eventdate)
-            res["value"]=tvalue
-            res["time"]=eventdate
+            elem["value"]=tvalue
+            elem["time"]=(eventdate-date(1970,1,1)).total_seconds()
+            #import pdb; pdb.set_trace()
         elif ttype == "time":
             mins = int(tdata,2)
             hours = int(mins / 60)
             minutes = mins - 60 * hours
             tvalue = "%02d:%02d"%(hours,minutes)
-            res["value"]=tvalue
-            res["time"]= mins / (24*60)
+            elem["value"]=tvalue
+            elem["time"]= mins / (24*60)
         elif ttype == "bcd3":
             tvalue = ""
             tvalue += str(int(tdata[0:4],2))
             tvalue += str(int(tdata[4:8],2))
             tvalue += str(int(tdata[8:12],2))
-            res["value"] = int(tvalue,10)
+            elem["value"] = int(tvalue,10)
         elif ttype == "bcddate":
             tvalue = ""
             tvalue += str(int(tdata[0:4],2))
@@ -149,19 +154,19 @@ def parse_schema(binstring,schema,context={}):
             tvalue += "-"
             tvalue += str(int(tdata[24:28],2))
             tvalue += str(int(tdata[28:32],2))
-            res["value"] = tvalue
+            elem["value"] = tvalue
 
         # ascii char
         elif ttype == "ascii":
             tvalue = ""
             for i in range(int(tlength /8)):
                 tvalue += chr(int(tdata[i*8:(i+1)*8],2))
-            res["value"] = tvalue
+            elem["value"] = tvalue
         elif ttype == "alpha5":
             tvalue = ""
             for i in range(int(len(tdata)/5)):
                 tvalue += en1545_alpha4[int(tdata[5*i:5*(i+1)],2)] 
-            res["value"] = tvalue
+            elem["value"] = tvalue
         
 
         # all zeroes
@@ -169,56 +174,69 @@ def parse_schema(binstring,schema,context={}):
             #check if it's all 0
             #TODO also check length
             if int(tdata,2) == 0:
-                #res += prefix + "%s: %d 0's\n"% (tname,len(tdata))
-                res["value"] = ""
+                elem["value"] = ""
             else:
-                res["value"] = "Warning not null : "+tdata
+                elem["value"] = "Warning not null : "+tdata
+
         # complex types
         elif ttype == "bitmap":
             #read the bitmap field (starting from the lsb at end)
             #and interpret data
-            #import pdb; pdb.set_trace()
             bitmap_schema = token["schema"]
-            res += prefix + tname + " bitmap\n"
-            res["value"]=tdata
-            res["children"]=[]
+            elem["children"]=[]
             for i,present in enumerate(reversed(tdata)):
                 if present == "1":
-                    r2,binstring,context = parse_bin_old(binstring,[bitmap_schema[i]],context) 
-                    res["children"].append(r2)
+                    r2,binstring,context = parse_schema(binstring,[bitmap_schema[i]],context,asdict=asdict) 
+                    elem["children"].append(r2)
+
         elif ttype == "complex":
-            res["children"]=[]
-            r2,binstring,context = parse_bin_old(binstring,token["schema"],context) 
-            res["children"].append(r2)
+            r2,binstring,context = parse_schema(binstring,token["schema"],context,asdict=asdict) 
+            elem["value"]=r2
         elif ttype == "repeat":
             count = int(tdata,2)
-            res["children"]=[]
+            elem["value"]=[]
             for i in range(count):
-                r2,binstring,context = parse_bin_old(binstring,token["schema"],context) 
-                res["children"].append(r2)
+                r2,binstring,context = parse_schema(binstring,token["schema"],context,asdict=asdict) 
+                elem["value"].append(r2)
         elif ttype == "contractextradata":
             #we should read extra data based on the issuer-id
             schema = contract_extra_data.get(context.get("extended-data-id","default"))
             if schema is not None:
-                res["children"]=[]
-                r2,binstring,context = parse_bin_old(binstring,schema,context) 
-                res["children"].append(r2)
+                elem["value"]=[]
+                r2,binstring,context = parse_schema(binstring,schema,context,asdict=asdict) 
+                elem["value"].append(r2)
         #Simple peek of remaining data
         elif ttype == "peekremainder":
-                #putback bits
-                binstring = tdata + binstring
-                res["value"] = binstring
+            #putback bits
+            binstring = tdata + binstring
+            elem["value"] = binstring
 
         #TODO lookup should be treated as one single function
         elif ttype == "lookup":
             tvalue = int(tdata,2)
             table  = token["as"]
             tdesc = table.get(tvalue,"Unknown")
-            res["value"] = "%s (%d)"%(tdesc,tvalue)
-            res["value-int"]=tvalue
+            elem["value"] = "%s (%d)"%(tdesc,tvalue)
+            elem["value-int"]=tvalue
         # not a valid type
         else:
-            res["value"]= tdata
+            elem["value"]= tdata
+
+
+        if asdict:
+            children = elem.get("children")
+            if children is not None:
+                for child in children:
+                    if child.get("children"):
+                        print("Error :(")
+                    else:
+                        for key in child.keys():
+                            res[key] = child[key]
+            val=elem.get("value")
+            if val is not None:
+                res[elem["name"]] = val
+        else:
+            res.append(elem)
     return (res,binstring,context)
 
     
@@ -444,6 +462,70 @@ def parse_card(card):
         "change-time" : card["change-time"]
     }
     #Parse environment
+    
+    data = card["files"].get(":2000:2001")
+    if data is None:
+        data = card["files"].get("2001")
+    binstring = hex2bin(data[0])
+    
+    schema = file_schemas[":2000:2001"]
+
+    environment,binstring,context = parse_schema(binstring,schema) 
+
+    parsed["environment"] = environment
+
+    #Parse best-contracts
+    
+    data = card["files"].get(":2000:2050")
+    if data is None:
+        data = card["files"].get("2050")
+    binstring = hex2bin(data[0])
+    
+    schema = file_schemas[":2000:2050"]
+
+    best_contracts,binstring,context = parse_schema(binstring,schema) 
+
+    if len(best_contracts.keys()) == 1:
+        best_contracts = best_contracts[best_contracts.keys()[0]]
+    #reorganize by contract pointers
+    bc ={}
+    for contract in best_contracts:
+        bc[contract["bc-pointer"]] = contract["Tariff"]
+    #bc= best_contracts
+    
+    parsed["best-contracts"] = bc
+    
+    # contracts files
+    parsed["contracts"] = []
+    for i in range(8):
+        parsed["contracts"].append(None)
+
+    for bc_pointer in parsed["best-contracts"].keys():
+        file_id,recnum,counter_id = bc_pointer_to_idcontract_record_idcounter[bc_pointer]
+
+        data = card["files"].get(file_id)
+        if data is None:
+            data = card["files"].get(file_id.split(":")[2])
+        try:
+            binstring = hex2bin(data[recnum])
+        except:
+            import pdb; pdb.set_trace()
+
+
+        contract_type = int(parsed["best-contracts"][bc_pointer]["bc-tariff-type"],16)
+        schema = contract_schemas.get(contract_type)
+        if schema is None:
+            schema = contract_schemas.get("default")
+
+        contract,binstring,context = parse_schema(binstring,schema) 
+        parsed["contracts"][bc_pointer] = contract
+        
+
+    #import pdb; pdb.set_trace()
+    with open(card["tagid"]+"-"+card["change-time"]+"-parsed.txt","w") as file_:
+        import json
+        file_.write(json.dumps(parsed,indent=4))
+    
     #Parse best_contracts
     
     
@@ -451,6 +533,17 @@ def parse_card(card):
     return parsed
 
 if __name__ == '__main__':
+    def byteify(input):
+        if isinstance(input, dict):
+            return {byteify(key): byteify(value)
+                    for key, value in input.iteritems()}
+        elif isinstance(input, list):
+            return [byteify(element) for element in input]
+        elif isinstance(input, unicode):
+            return input.encode('utf-8')
+        else:
+            return input
+
     import argparse
     parser = argparse.ArgumentParser()
     args = parser.parse_args()
@@ -463,6 +556,8 @@ if __name__ == '__main__':
                     jsonfile = f.read()
                     import json
                     mycard = json.loads(jsonfile)
+                    mycard = byteify(mycard)
+                    parse_card(mycard)
                     card_info = format_card(mycard)
                     #write infos
                     with open(mycard["tagid"]+"-"+mycard["change-time"]+".info","w") as out:
