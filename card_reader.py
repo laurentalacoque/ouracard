@@ -1,3 +1,4 @@
+reader_num =3
 CD97_file_list = [
 
     { "lfi" : "3F00" , "name" : "Master File" },
@@ -37,10 +38,13 @@ CD97_file_list = [
 from smartcard.System import readers
 import smartcard.util as scu
 
-def select_application(conn):
+def select_application(conn,contactless=True):
     # This command selects the 1TIC.ICA AID
     SELECTAPPLI = [0x94, 0xA4, 0x04, 0x00, 0x08, 0x31, 0x54, 0x49, 0x43, 0x2E, 0x49, 0x43, 0x41]
     data,sw1,sw2 = conn.transmit(SELECTAPPLI)
+    print(data,sw1,sw2)
+    if not contactless:
+        data,sw1,sw2 = conn.transmit([0x94,0xC0,0x00,0x00,0x24])
     if sw1 >> 4 != 9:
         #error
         raise Exception("Could not select AID : result %02X%02X"%(sw1,sw2))
@@ -48,14 +52,17 @@ def select_application(conn):
     
     response = scu.toHexString(data,scu.PACK)
     card_id = scu.toHexString(data[19:27],scu.PACK)
-    n_mod_allowed = data[29]
-    chip_type = data[30]
-    application_type = data[31]
-    application_subtype = data[32]
-    issuer = data[33]
-    rom_software_version = data[34]
-    eeprom_software_version = data[35]
-    app_data = scu.toHexString(data[29:37], scu.PACK)
+    try:
+        n_mod_allowed = data[29]
+        chip_type = data[30]
+        application_type = data[31]
+        application_subtype = data[32]
+        issuer = data[33]
+        rom_software_version = data[34]
+        eeprom_software_version = data[35]
+        app_data = scu.toHexString(data[29:37], scu.PACK)
+    except:
+        pass
     #print("%s\n%s //  %s\n"%(response,card_id,app_data))
     #print("application %d.%d, chip %d by %d (%d mod allow.)"%(application_type,application_subtype,chip_type,issuer,n_mod_allowed))
     
@@ -64,13 +71,19 @@ def select_application(conn):
     
     return tagid, application_data
 
-def select_file(conn,lfid):
+def select_file(conn,lfid,contactless=True):
     res = {}
     file_id_bytes = scu.toBytes(lfid)
     command = [ 0x94, 0xA4, 0x00, 0x00, 0x02] + file_id_bytes
     data, sw1, sw2 = conn.transmit(command)
+    if not contactless:
+        data,sw1,sw2 = conn.transmit([0x94,0xC0,0x00,0x00])
+        if sw1 == 0x6C:
+            data,sw1,sw2 = conn.transmit([0x94,0xC0,0x00,0x00,sw2])
+
     
     if sw1 != 0x90 or sw2 != 0x00:
+        print("Card error transmit code %02X%02X"%(sw1,sw2))
         raise Exception("Card error transmit code %02X%02X"%(sw1,sw2))
     if data[0] != 0x85 or data[1] != 0x17:
         raise Exception("Unknown format, received %02X%02X != 8517"%(data[0],data[1]))
@@ -97,7 +110,7 @@ def select_file(conn,lfid):
     
     return res
 
-def read_record(connection,recnum,sfi=None):
+def read_record(connection,recnum,sfi=None,contactless=True):
     if sfi is None:
         sfi = 0x04
     else:
@@ -105,6 +118,8 @@ def read_record(connection,recnum,sfi=None):
     #print("reading record %d of file %d"%(recnum,sfi))
     command = [0x94,0xB2,recnum,sfi]
     data,sw1,sw2 = connection.transmit(command)
+    if sw1 == 0x6C:
+        data,sw1,sw2 = connection.transmit([0x94,0xB2,recnum,sfi,sw2])
 
     if sw1 >> 4 != 9:
         result_code = scu.toHexString([sw1,sw2],scu.PACK)
@@ -115,7 +130,11 @@ def read_record(connection,recnum,sfi=None):
 
 
 from smartcard.System import readers
-reader = readers()[0]
+try:
+	reader = readers()[reader_num]
+except:
+	reader = readers()[0]
+	
 print("Using :",reader)
 
 
@@ -123,11 +142,12 @@ connection = reader.createConnection()
 connection.connect()
 
 # select application
+contactlessmode=False
 card = {}
 card["application-type"] = "calypso"
 card["description"] = "scanned"
 card["application-name"] = "1TIC.ICA"
-tagid,application_data = select_application(connection)
+tagid,application_data = select_application(connection,contactlessmode)
 card["application-data"] = application_data
 card["tagid"] = tagid.lower()
 
@@ -145,7 +165,7 @@ for file_ref in CD97_file_list:
 
     print("%s\t\"%s\" (sfi %s)"%(file_ref["lfi"],file_ref["name"],sfi))
     try:
-        file_info = select_file(connection,file_ref["lfi"])
+        file_info = select_file(connection,file_ref["lfi"],contactlessmode)
         print("\t%s with %d records (%d bytes) / sfi: 0x%02X"%(file_info["nature"],file_info["records"],file_info["record_size"],file_info["sfi"]))
         current_file = file_ref["lfi"]
         card["files"][current_file] = []
@@ -153,12 +173,15 @@ for file_ref in CD97_file_list:
         
         for i in range(file_info["records"]):
             try:
-                data = scu.toHexString(read_record(connection,i+1),scu.PACK)
+                data = scu.toHexString(read_record(connection,i+1,contactlessmode),scu.PACK)
                 print("\t\t%s"%data)
                 card["files"][current_file].append(data)
             except Exception as e:
-                print("\t"+ e)
-    except:
+                print(e)
+                import traceback; traceback.print_exc()
+    except Exception as e:
+        print(e)
+        import traceback; traceback.print_exc()
         print("\tError reading file")
 
     print("\n")
