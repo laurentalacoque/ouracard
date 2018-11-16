@@ -2,13 +2,15 @@
 reader_num =3
 CD97_file_list = [
 
-    { "lfi" : "3F00" , "name" : "Master File" },
+    { "lfi" : "3F00" , "name" : "Master File AID" },
+    { "lfi" : "3F04" , "name" : "Master File" },
     { "lfi" : "0002" , "name" : "ICC"},
     { "lfi" : "0003" , "name" : "Holder Id"},
     { "lfi" : "2F10" , "name" : "Display" },
 
     { "lfi" : "1000" , "name" : "PME (EP)"},
     { "lfi" : "1004" , "name" : "Loading log",  "sfi" : 0x14},
+    { "lfi" : "1014" , "name" : "EP AID"},
     { "lfi" : "1015" , "name" : "Purchase log", "sfi" : 0x15},
 
     { "lfi" : "2000" , "name" : "Ticketing (RT)"},
@@ -28,7 +30,7 @@ CD97_file_list = [
 
     { "lfi" : "3100" , "name" : "Multiusage (MPP)"},
     { "lfi" : "3104" , "name" : "Multiusage (MPP) AID"},
-    { "lfi" : "3101" , "name" : "Private parameters"},
+#    { "lfi" : "3101" , "name" : "Private parameters"},
     { "lfi" : "3102" , "name" : "Public parameters"},
     { "lfi" : "3115" , "name" : "MPP Journal"},
     { "lfi" : "3113" , "name" : "MPP Counter"},
