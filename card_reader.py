@@ -166,7 +166,7 @@ card["application-type"] = "calypso"
 card["description"] = "scanned"
 card["application-name"] = "1TIC.ICA"
 tagid,application_data = select_application(connection,contactlessmode)
-card["application-data"] = application_data
+card["application-data"] = application_data.lower()
 card["tagid"] = tagid.lower()
 #quit()
 
@@ -198,7 +198,7 @@ for file_ref in CD97_file_list:
             try:
                 data = scu.toHexString(read_record(connection,i+1,record_size=file_info["record_size"]),scu.PACK)
                 print("\t\t%s"%data)
-                card["files"][current_file].append(data)
+                card["files"][current_file].append(data.lower())
             except Exception as e:
                 #print(e)
                 #import traceback; traceback.print_exc()
