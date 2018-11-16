@@ -128,14 +128,14 @@ contract_schemas = {
 }
 
 bc_pointer_to_idcontract_record_idcounter = {
-    1:(":2000:2020",0,":2000:202a"),
-    2:(":2000:2020",1,":2000:202b"),
-    3:(":2000:2020",2,":2000:202c"),
-    4:(":2000:2020",3,":2000:202d"),
-    5:(":2000:2030",0,None),
-    6:(":2000:2030",1,None),
-    7:(":2000:2030",2,None),
-    8:(":2000:2030",3,None),
+    1:("2020",0,"202a"),
+    2:("2020",1,"202b"),
+    3:("2020",2,"202c"),
+    4:("2020",3,"202d"),
+    5:("2030",0,None),
+    6:("2030",1,None),
+    7:("2030",2,None),
+    8:("2030",3,None),
 }
     
     
@@ -260,19 +260,19 @@ icc_schema=[
 ]
 
 file_schemas = {
-    ":2": icc_schema,
-    ":1000:1004": application_name_schema,
-    ":2000:2004": application_name_schema,
-    ":3100:3104": application_name_schema,
-    ":3f04":      application_name_schema,
-    ":2000:2001": environment_holder_schema,
-    ":2000:2050": best_contracts_schema,
-    ":2000:2030": contract_schemas[0x20],
-    ":2000:2020": contract_schemas[0x20],
-    ":2000:2010": event_schema,
-    ":2000:2040": event_schema,
-    ":2000:202a": simulated_counter_schema,
-    ":2000:202b": simulated_counter_schema,
-    ":2000:202c": simulated_counter_schema,
-    ":2000:202d": simulated_counter_schema,
+    "0002": icc_schema,
+    "1004": application_name_schema,
+    "2004": application_name_schema,
+    "3104": application_name_schema,
+    "3f04":      application_name_schema,
+    "2001": environment_holder_schema,
+    "2050": best_contracts_schema,
+    "2030": contract_schemas[0x20],
+    "2020": contract_schemas[0x20],
+    "2010": event_schema,
+    "2040": event_schema,
+    "202a": simulated_counter_schema,
+    "202b": simulated_counter_schema,
+    "202c": simulated_counter_schema,
+    "202d": simulated_counter_schema,
 }

@@ -39,6 +39,10 @@ def parse_card(filename, description=""):
         files = application.xpath('records/file')
         for thefile in files:
             name = thefile.get('name')
+            #keep only the file name
+            name = name.split(":")[-1]
+            #four-chars formated
+            name = "%04x"%int(name,16)
             card['files'][name] = []
             records = thefile.xpath('records/record')
             for record in records:

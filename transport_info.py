@@ -21,65 +21,65 @@ from oura_struct import *
 
 
 full_path = {
-    "1004" : ":1000:1004",
-    "1014" : ":1000:1014",
-    "1015" : ":1000:1015",
-    "2001" : ":2000:2001",
-    "2002" : ":2000:2002",
-    "2004" : ":2000:2004",
-    "2010" : ":2000:2010",
-    "2020" : ":2000:2020",
-    "2030" : ":2000:2030",
-    "2040" : ":2000:2040",
-    "2050" : ":2000:2050",
-    "202A" : ":2000:202a",
-    "202B" : ":2000:202b",
-    "202C" : ":2000:202c",
-    "202D" : ":2000:202d",
-    "3104" : ":3100:3104",
-    "3102" : ":3100:3102",
-    "3115" : ":3100:3115",
-    "3120" : ":3100:3120",
-    "3113" : ":3100:3113",
-    "3123" : ":3100:3123",
-    "3133" : ":3100:3133",
-    "3169" : ":3100:3169",
-    "3150" : ":3100:3150",
-    "31f0" : ":3100:31f0",
-    "0002" : ":2",
-    "0003" : ":3",
+    "1004" : "1004",
+    "1014" : "1014",
+    "1015" : "1015",
+    "2001" : "2001",
+    "2002" : "2002",
+    "2004" : "2004",
+    "2010" : "2010",
+    "2020" : "2020",
+    "2030" : "2030",
+    "2040" : "2040",
+    "2050" : "2050",
+    "202A" : "202a",
+    "202B" : "202b",
+    "202C" : "202c",
+    "202D" : "202d",
+    "3104" : "3104",
+    "3102" : "3102",
+    "3115" : "3115",
+    "3120" : "3120",
+    "3113" : "3113",
+    "3123" : "3123",
+    "3133" : "3133",
+    "3169" : "3169",
+    "3150" : "3150",
+    "31f0" : "31f0",
+    "0002" : "0002",
+    "0003" : "0003",
 }
     
 filename = {
-    ":3f04"     :"AID",
-    ":2"        :"ICC",
-    ":3"        :"ID",
-    ":1000:1004":"EP / AID",
-    ":1000:1014":"EP / Load Log",
-    ":1000:1015":"EP / Purchase Log",
-    ":2000:2001":"Ticketing / Environment",
-    ":2000:2002":"Ticketing / Environment Holder",
-    ":2000:2004":"Ticketing / AID",
-    ":2000:2010":"Ticketing / Events",
-    ":2000:2020":"Ticketing / Contracts",
-    ":2000:2030":"Ticketing / Contracts",
-    ":2000:2040":"Ticketing / Special Events",
-    ":2000:2050":"Ticketing / Contract List",
-    ":2000:202a":"Ticketing / Counter",
-    ":2000:202b":"Ticketing / Counter",
-    ":2000:202c":"Ticketing / Counter",
-    ":2000:202d":"Ticketing / Counter",
-    ":2f10"     :"Display / Free",
-    ":3100:3104":"MPP / AID",
-    ":3100:3102":"MPP / Public Param.",
-    ":3100:3115":"MPP / Log",
-    ":3100:3120":"MPP / Contracts",
-    ":3100:3113":"MPP / Counters",
-    ":3100:3123":"MPP / Counters",
-    ":3100:3133":"MPP / Counters",
-    ":3100:3169":"MPP / Counters",
-    ":3100:3150":"MPP / Misc.",
-    ":3100:31f0":"MPP / Free",
+    "3f04":"AID",
+    "0002":"ICC",
+    "0003":"ID",
+    "1004":"EP / AID",
+    "1014":"EP / Load Log",
+    "1015":"EP / Purchase Log",
+    "2001":"Ticketing / Environment",
+    "2002":"Ticketing / Environment Holder",
+    "2004":"Ticketing / AID",
+    "2010":"Ticketing / Events",
+    "2020":"Ticketing / Contracts",
+    "2030":"Ticketing / Contracts",
+    "2040":"Ticketing / Special Events",
+    "2050":"Ticketing / Contract List",
+    "202a":"Ticketing / Counter",
+    "202b":"Ticketing / Counter",
+    "202c":"Ticketing / Counter",
+    "202d":"Ticketing / Counter",
+    "2f10":"Display / Free",
+    "3104":"MPP / AID",
+    "3102":"MPP / Public Param.",
+    "3115":"MPP / Log",
+    "3120":"MPP / Contracts",
+    "3113":"MPP / Counters",
+    "3123":"MPP / Counters",
+    "3133":"MPP / Counters",
+    "3169":"MPP / Counters",
+    "3150":"MPP / Misc.",
+    "31f0":"MPP / Free",
 
 }    
 
@@ -463,12 +463,11 @@ def parse_card(card):
     }
     #Parse environment
     
-    data = card["files"].get(":2000:2001")
-    if data is None:
-        data = card["files"].get("2001")
+    data = card["files"].get("2001")
+
     binstring = hex2bin(data[0])
     
-    schema = file_schemas[":2000:2001"]
+    schema = file_schemas["2001"]
 
     environment,binstring,context = parse_schema(binstring,schema) 
 
@@ -476,12 +475,11 @@ def parse_card(card):
 
     #Parse best-contracts
     
-    data = card["files"].get(":2000:2050")
-    if data is None:
-        data = card["files"].get("2050")
+    data = card["files"].get("2050")
+
     binstring = hex2bin(data[0])
     
-    schema = file_schemas[":2000:2050"]
+    schema = file_schemas["2050"]
 
     best_contracts,binstring,context = parse_schema(binstring,schema) 
 
@@ -525,8 +523,6 @@ def parse_card(card):
         if counter_id is not None:
             # Get counter data
             data = card["files"].get(counter_id)
-            if data is None:
-                data = card["files"].get(counter_id.split(":")[2].upper())
             try:
                 binstring = hex2bin(data[0])
             except:
