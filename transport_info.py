@@ -187,24 +187,28 @@ def parse_schema(binstring,schema,context={},asdict=True):
             for i,present in enumerate(reversed(tdata)):
                 if present == "1":
                     r2,binstring,context = parse_schema(binstring,[bitmap_schema[i]],context,asdict=asdict) 
-                    elem["children"].append(r2)
-
+                    if isinstance(r2,list):
+                        elem["children"].extend(r2)
+                    else:
+                        elem["children"].append(r2)
         elif ttype == "complex":
             r2,binstring,context = parse_schema(binstring,token["schema"],context,asdict=asdict) 
             elem["value"]=r2
         elif ttype == "repeat":
             count = int(tdata,2)
-            elem["value"]=[]
+            elem["children"]=[]
             for i in range(count):
                 r2,binstring,context = parse_schema(binstring,token["schema"],context,asdict=asdict) 
-                elem["value"].append(r2)
+                if isinstance(r2,list):
+                    elem["children"].extend(r2)
+                else:
+                    elem["children"].append(r2)
         elif ttype == "contractextradata":
             #we should read extra data based on the issuer-id
             schema = contract_extra_data.get(context.get("extended-data-id","default"))
             if schema is not None:
-                elem["value"]=[]
                 r2,binstring,context = parse_schema(binstring,schema,context,asdict=asdict) 
-                elem["value"].append(r2)
+                elem["value"]=r2
         #Simple peek of remaining data
         elif ttype == "peekremainder":
             #putback bits
@@ -225,16 +229,17 @@ def parse_schema(binstring,schema,context={},asdict=True):
 
         if asdict:
             children = elem.get("children")
-            if children is not None:
+            if children is not None and ttype != "repeat":
                 for child in children:
-                    if child.get("children"):
-                        print("Error :(")
-                    else:
-                        for key in child.keys():
-                            res[key] = child[key]
+                    if not isinstance(child,dict):
+                        import pdb; pdb.set_trace()
+                    for key in child.keys():
+                        res[key] = child[key]
             val=elem.get("value")
             if val is not None:
                 res[elem["name"]] = val
+            if ttype == "repeat":
+                res[elem["name"]] = elem.get("children")
         else:
             res.append(elem)
     return (res,binstring,context)
@@ -297,17 +302,21 @@ def parse_card(card):
     environment,binstring,context = parse_schema(binstring,schema) 
 
     parsed["environment"] = environment
+    
+    environment2,binstring,context = parse_schema(hex2bin(data[0]),schema,asdict=False) 
+    parsed["environment_serial"] = environment2
 
     #Parse best-contracts
-    
     data = card["files"].get("2050")
-
     binstring = hex2bin(data[0])
-    
     schema = file_schemas["2050"]
-
     best_contracts,binstring,context = parse_schema(binstring,schema) 
-
+    best_contracts2,binstring,context = parse_schema(hex2bin(data[0]),schema) 
+    parsed["best_contracts_serial"]=best_contracts2
+    import json
+    #print(json.dumps(parsed,indent=4))
+    #print(json.dumps(best_contracts,indent=4))
+    #import pdb; pdb.set_trace()
     if len(best_contracts.keys()) == 1:
         best_contracts = best_contracts[best_contracts.keys()[0]]
     #reorganize by contract pointers
