@@ -239,135 +239,7 @@ def parse_schema(binstring,schema,context={},asdict=True):
             res.append(elem)
     return (res,binstring,context)
 
-    
-    
-def parse_bin_old(binstring,schema,prefix="",extended_data_id="default"):
-    #formatted response
-    res  = ""
-    for token in schema:
-        ttype   = token["type"]
-        #print(ttype)
-        tlength = token["length"]
-        tdesc   = token.get("description","")
-        tname   = token.get("name",tdesc)
-        tdata   = binstring[:tlength] 
-        if token.get("extended-data-id"):
-            #we should read extra data based on the issuer-id
-            extended_data_id = int(tdata,2)
-        #pop binstring
-        binstring   = binstring[tlength:] 
-        
-        # standard types
-        if ttype == "int":
-            tvalue = str(int(tdata,2))
-            res += prefix + "%s: %s\n"%(tname,tvalue)
-        elif ttype == "hex":
-            tvalue = str(hex(int(tdata,2)))[2:]
-            res += prefix + "%s: %sh\n"%(tname,tvalue)
-        elif ttype == "bin":
-            res += prefix + "%s: %sb\n"%(tname,tdata)
-
-        # date and time
-        elif ttype == "date":
-            from datetime import date,timedelta
-            orig = date(1997,1,1)
-            eventdate = orig+timedelta(days = int(tdata,2))
-            tvalue = str(eventdate)
-            res += prefix + "%s: %s\n"%(tname,tvalue)
-        elif ttype == "time":
-            mins = int(tdata,2)
-            hours = int(mins / 60)
-            minutes = mins - 60 * hours
-            tvalue = "%02d:%02d"%(hours,minutes)
-            res += prefix + "%s: %s\n"%(tname,tvalue)
-        elif ttype == "bcd3":
-            tvalue = ""
-            tvalue += str(int(tdata[0:4],2))
-            tvalue += str(int(tdata[4:8],2))
-            tvalue += str(int(tdata[8:12],2))
-            res += prefix + "%s: %s\n"%(tname,tvalue)
-        elif ttype == "bcddate":
-            tvalue = ""
-            tvalue += str(int(tdata[0:4],2))
-            tvalue += str(int(tdata[4:8],2))
-            tvalue += str(int(tdata[8:12],2))
-            tvalue += str(int(tdata[12:16],2))
-            tvalue += "-"
-            tvalue += str(int(tdata[16:20],2))
-            tvalue += str(int(tdata[20:24],2))
-            tvalue += "-"
-            tvalue += str(int(tdata[24:28],2))
-            tvalue += str(int(tdata[28:32],2))
-            res += prefix + "%s: %s\n"%(tname,tvalue)
-
-        # ascii char
-        elif ttype == "ascii":
-            tvalue = ""
-            for i in range(int(tlength /8)):
-                tvalue += chr(int(tdata[i*8:(i+1)*8],2))
-            res += prefix + "%s: \"%s\"\n"%(tname,tvalue)
-        elif ttype == "alpha5":
-            tvalue = ""
-            for i in range(int(len(tdata)/5)):
-                tvalue += en1545_alpha4[int(tdata[5*i:5*(i+1)],2)] 
-            res += prefix + "%s: \"%s\"\n"%(tname,tvalue)
-        
-
-        # all zeroes
-        elif ttype == "null":
-            #check if it's all 0
-            #TODO also check length
-            if int(tdata,2) == 0:
-                #res += prefix + "%s: %d 0's\n"% (tname,len(tdata))
-                res += ""
-            else:
-                res += prefix + "%s: WARNING not null : %s\n"% (tname,tdata)
-        # complex types
-        elif ttype == "bitmap":
-            #read the bitmap field (starting from the lsb at end)
-            #and interpret data
-            #import pdb; pdb.set_trace()
-            bitmap_schema = token["schema"]
-            res += prefix + tname + " bitmap\n"
-            for i,present in enumerate(reversed(tdata)):
-                if present == "1":
-                    r2,binstring,extended_data_id = parse_bin_old(binstring,[bitmap_schema[i]],prefix+ "  ",extended_data_id) 
-                    res += r2
-        elif ttype == "complex":
-            res += prefix + tname +"\n"
-            r2,binstring,extended_data_id = parse_bin_old(binstring,token["schema"],prefix+"  ",extended_data_id)
-            res += r2
-        elif ttype == "repeat":
-            count = int(tdata,2)
-            res += prefix + "List (%d)\n"%count
-            for i in range(count):
-                r2,binstring,extended_data_id = parse_bin_old(binstring,token["schema"],prefix+ str(i)+ " ",extended_data_id)
-                res += r2
-        elif ttype == "contractextradata":
-            #we should read extra data based on the issuer-id
-            schema = contract_extra_data.get(extended_data_id)
-            if schema is not None:
-                r2, binstring,extended_data_id = parse_bin_old(binstring,schema,prefix+ "  ",extended_data_id)
-                res += r2
-        #Simple peek of remaining data
-        elif ttype == "peekremainder":
-                #putback bits
-                binstring = tdata + binstring
-                res += "<remainder: " + binstring + "\n"
-
-        #TODO lookup should be treated as one single function
-        elif ttype == "lookup":
-            tvalue = int(tdata,2)
-            table  = token["as"]
-            tdesc = table.get(tvalue,"Unknown")
-            res += prefix + "%s: %s (%d)\n"%(tname,tdesc,tvalue)
-        # not a valid type
-        else:
-            res += prefix + "unknown type %s, %s: %s\n"%(ttype,tname,tdata)
-    return (res,binstring,extended_data_id)
-        
-
-
+ 
 def hex2bin(hexstring):
     assoc={
         "0":"0000",
@@ -406,54 +278,7 @@ def hex2str(hexstring):
     return " ".join(string)
 
 
-def format_card(card):
-    result =""
-    result += ("card <%s> id: %s (%s)\n"% (card['filename'], card['tagid'], card['application-type']))
-    result += ("\tdescription:      \"%s\"\n"%card['description'])
-    result += ("\tchange-time:      %s\n"%card['change-time'])
-    files = card['files']
-    filelist = files.keys()
-    filelist.sort()
-    for f in filelist:
-        #if it's the short filename, get the full one
-        fn = f
-        if filename.get(fn) is None:
-            fn = full_path.get(fn,fn)
 
-        filedesc = filename.get(fn,"Unknown")
-        result += "_________________________________________________________________\n"
-        result += ("\t%s (%s)\n" % (fn,filedesc))
-        binschem = file_schemas.get(fn)
-        for r in files[f]:
-            if int(r,16) == 0:
-                result += ("\t\t000... (%d)\n"%(int(len(r)/2)))
-            else:
-                if binschem is not None:
-                    try:
-                        result += "\t\t\\\n"
-                        r2,b,d = parse_bin_old(hex2bin(r),binschem,"\t\t| ")
-                        result += r2
-                        if len(b)>0 and int(b,2) != 0:
-                            # some bits remain
-                            result += "\t\t<remainder>" + b + "\n" 
-                    except Exception as e:
-                        print("error for file "+f)
-                        import traceback; traceback.print_exc()
-                else:
-                    result += "\t\t%s\n"%r
-
-                if printhex: result +=  ("\t\t%s\n"%(r))
-                if printstr: result +=  ("\t\t%s\n"%(hex2str(r)))
-                if printbin: result +=  ("\t\t%s\n"%(hex2bin(r)))
-                if printalpha:
-                    binstr = hex2bin(r)
-                    result +=  ("\t\t%s\n"%(bin2alpha(binstr)))
-                    result +=  ("\t\t%s\n"%(bin2alpha(binstr[1:])))
-                    result +=  ("\t\t%s\n"%(bin2alpha(binstr[2:])))
-                    result +=  ("\t\t%s\n"%(bin2alpha(binstr[3:])))
-                    result +=  ("\t\t%s\n"%(bin2alpha(binstr[4:])))
-
-    return result
 
 def parse_card(card):
     parsed = {
@@ -570,10 +395,10 @@ if __name__ == '__main__':
                     mycard = json.loads(jsonfile)
                     mycard = byteify(mycard)
                     parse_card(mycard)
-                    card_info = format_card(mycard)
-                    #write infos
-                    with open(mycard["tagid"]+"-"+mycard["change-time"]+".info","w") as out:
-                        out.write(card_info)
+#                    card_info = format_card(mycard)
+#                    #write infos
+#                    with open(mycard["tagid"]+"-"+mycard["change-time"]+".info","w") as out:
+#                        out.write(card_info)
             except:
                 import traceback
                 traceback.print_exc()
