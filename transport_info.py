@@ -281,7 +281,76 @@ def hex2str(hexstring):
     import re
     string = re.sub('[\x00-\x20\x7f-\xff]','`',bastr)
     return " ".join(string)
-
+    
+def log_elements(struct,start_of_line=""):
+    res =""
+    if isinstance(struct,list):
+        for elem in struct:
+            res += log_elements(elem,start_of_line=start_of_line)
+    elif isinstance(struct,dict):
+        value = struct.get("value")
+        name  = struct.get("name")
+        children = struct.get("children")
+        res += start_of_line
+        if name is not None:
+            res += name + ": "
+        if value is not None:
+            if isinstance(value,list):
+                res += "\n"
+                for child in value:
+                    res += log_elements(child,start_of_line + "  ")
+            else:
+                res += str(value) + "\n"
+        if children is not None:
+            if isinstance(children,list):
+                res += "\n"
+                for child in children:
+                    res += log_elements(child,start_of_line + "  ")
+            else:
+                res += str(value) + "\n"        
+    else:
+        res += start_of_line + "ERROR : don't know type %s\n"%(str(type(elem)))
+    #import pdb; pdb.set_trace()    
+    return res
+    
+def print_card(card):
+    parsed = {
+        "tagid"       : card["tagid"],
+        "description" : card["description"],
+        "change-time" : card["change-time"]
+    }
+    cardinfos = "card: %s\nchange %s\ndescription: %s \n\n"%(card["tagid"],card["change-time"],card["description"])
+    for fid in filename.keys():
+        fid = fid.lower()
+        full_name = filename[fid]
+        schema=file_schemas.get(fid)
+        if schema is None:
+            schema=[{"name":"unknown", "type":"peekremainder", "length":0}]
+        data = card["files"].get(fid)
+        #import pdb; pdb.set_trace()
+        if data is None:
+            cardinfos += "%s\t%s (Key not found)\n"%(fid,full_name)
+        elif len(data) == 0:
+            cardinfos += "%s\t%s (No records)\n"%(fid,full_name)
+        else:
+            cardinfos += "%s\t%s\n"%(fid,full_name)
+            for recnum,rec in enumerate(data):
+                try:
+                    rec = rec.lower()
+                    if int(rec,16) == 0:
+                        cardinfos += "\t+ 000... (%d)\n"%(int(len(rec)/2))
+                    else:
+                        cardinfos += "\t+ %s\n"%rec
+                        binstring = hex2bin(rec)
+                        obj,binstring,context = parse_schema(binstring,schema,asdict=False)
+                        cardinfos += log_elements(obj,start_of_line="\t   ")
+                        cardinfos += "\n"
+                except Exception as e:
+                    print("Error %s, for record %d of file %s"%(str(e),recnum,fid))
+                    import traceback; traceback.print_exc()
+                    
+                
+    return cardinfos
 
 
 
@@ -302,17 +371,14 @@ def parse_card(card):
     environment,binstring,context = parse_schema(binstring,schema) 
 
     parsed["environment"] = environment
-    
-    environment2,binstring,context = parse_schema(hex2bin(data[0]),schema,asdict=False) 
-    parsed["environment_serial"] = environment2
+
 
     #Parse best-contracts
     data = card["files"].get("2050")
     binstring = hex2bin(data[0])
     schema = file_schemas["2050"]
     best_contracts,binstring,context = parse_schema(binstring,schema) 
-    best_contracts2,binstring,context = parse_schema(hex2bin(data[0]),schema) 
-    parsed["best_contracts_serial"]=best_contracts2
+
     import json
     #print(json.dumps(parsed,indent=4))
     #print(json.dumps(best_contracts,indent=4))
@@ -404,6 +470,7 @@ if __name__ == '__main__':
                     mycard = json.loads(jsonfile)
                     mycard = byteify(mycard)
                     parse_card(mycard)
+                    print(print_card(mycard))
 #                    card_info = format_card(mycard)
 #                    #write infos
 #                    with open(mycard["tagid"]+"-"+mycard["change-time"]+".info","w") as out:
