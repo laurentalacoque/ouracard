@@ -550,7 +550,7 @@ def parse_bin(binstring,schema,prefix="",extended_data_id="default"):
             res += prefix + "%s: %s (%d)\n"%(tname,tdesc,tvalue)
         # not a valid type
         else:
-            res += prefix + "unknown type %s, %s: %s\n"%(ttype,tname,tdata)
+            res += prefix + "unknown type \"%s\", %s: %s\n"%(ttype,tname,tdata)
     return (res,binstring,extended_data_id)
         
 
