@@ -95,14 +95,18 @@ def parse_schema(binstring,schema,context={},asdict=True):
         tlength = token["length"]
         tdesc   = token.get("description","")
         tname   = token.get("name",tdesc)
-        tdata   = binstring[:tlength] 
+        tdata   = binstring[:tlength]
+        if len(tdata) < token["length"]:
+            tvalue = "not enough data for type '%s': %d insead of %d"%(ttype,len(tdata),token["length"])
+            ttype = "error"
+
+
         elem ={
             "name":tname,
             "description":tdesc,
             "bin-rep":tdata,
             "type":ttype
         }
-
         #pop tdata from binstring
         binstring   = binstring[tlength:] 
 
@@ -119,6 +123,8 @@ def parse_schema(binstring,schema,context={},asdict=True):
             elem["value"]=tvalue
         elif ttype == "bin":
             elem["value"]=tdata
+        elif ttype == "error":
+            pass
 
         # date and time
         elif ttype == "date":
@@ -242,6 +248,7 @@ def parse_schema(binstring,schema,context={},asdict=True):
                 res[elem["name"]] = elem.get("children")
         else:
             res.append(elem)
+
     return (res,binstring,context)
 
  
@@ -339,14 +346,20 @@ def print_card(card):
                     rec = rec.lower()
                     if int(rec,16) == 0:
                         cardinfos += "\t+ 000... (%d)\n"%(int(len(rec)/2))
+                    elif len(rec) == 0:
+                        #empty
+                        pass
                     else:
                         cardinfos += "\t+ %s\n"%rec
                         binstring = hex2bin(rec)
                         obj,binstring,context = parse_schema(binstring,schema,asdict=False)
+                        if len(binstring) > 0 and int(binstring,2) !=0 :
+                            elem={"name":"remainder","type":"bin","value":binstring}
+                            obj.append(elem)
                         cardinfos += log_elements(obj,start_of_line="\t   ")
                         cardinfos += "\n"
                 except Exception as e:
-                    print("Error %s, for record %d of file %s"%(str(e),recnum,fid))
+                    print("Error %s, for record %d of file %s [%s]"%(str(e),recnum,fid,rec))
                     import traceback; traceback.print_exc()
                     
                 
@@ -418,7 +431,7 @@ def parse_card(card):
 
         # Parse data
         contract,binstring,context = parse_schema(binstring,schema) 
-        parsed["contracts"][bc_pointer] = contract
+        parsed["contracts"][bc_pointer-1] = contract
 
         if counter_id is not None:
             # Get counter data
@@ -430,7 +443,7 @@ def parse_card(card):
             # Parse counter
             counter,binstring,context = parse_schema(binstring,simulated_counter_schema)
             # Add this to the contract
-            parsed["contracts"][bc_pointer]["counter"]=counter
+            parsed["contracts"][bc_pointer-1]["counter"]=counter
         
 
     #import pdb; pdb.set_trace()
@@ -470,7 +483,9 @@ if __name__ == '__main__':
                     mycard = json.loads(jsonfile)
                     mycard = byteify(mycard)
                     parse_card(mycard)
-                    print(print_card(mycard))
+                    as_txt=print_card(mycard)
+                    with open(mycard["tagid"]+"-"+mycard["change-time"]+".infotxt","w") as out:
+                        out.write(as_txt)
 #                    card_info = format_card(mycard)
 #                    #write infos
 #                    with open(mycard["tagid"]+"-"+mycard["change-time"]+".info","w") as out:
