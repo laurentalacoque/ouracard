@@ -327,7 +327,9 @@ def print_card(card):
         "change-time" : card["change-time"]
     }
     cardinfos = "card: %s\nchange %s\ndescription: %s \n\n"%(card["tagid"],card["change-time"],card["description"])
-    for fid in filename.keys():
+    files = filename.keys()
+    files.sort()
+    for fid in files:
         fid = fid.lower()
         full_name = filename[fid]
         schema=file_schemas.get(fid)
