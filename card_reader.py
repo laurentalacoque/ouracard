@@ -164,6 +164,8 @@ print('T15 supported: ', atr.isT15Supported())
 # select application
 contactlessmode=False
 card = {}
+atr = str(atr)
+card["ATR"] = atr.lower() 
 card["application-type"] = "calypso"
 card["description"] = "scanned"
 card["application-name"] = "1TIC.ICA"
@@ -212,7 +214,7 @@ for file_ref in CD97_file_list:
 
     print("\n")
 
-
+card["description"] = raw_input("\n\nChange description: ")
 import json
 basename = card["tagid"] +"-"+ card["change-time"] + ".json"
 with open(basename,'w') as file:
