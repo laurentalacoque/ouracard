@@ -237,10 +237,10 @@ event_schema = [
         { "description":"EventAuthenticator"                  , "length":16  , "type":"hex"},
         { "description":"EventData"                           , "length":5   , "type":"bitmap", 
             "schema" : [
-                { "description":"EventDataFirstStamp"         , "length":14  , "type":"date"},
-                { "description":"EventDataFirstStamp"         , "length":11  , "type":"time"},
+                { "description":"EventDataFirstDate"         , "length":14  , "type":"date"},
+                { "description":"EventDataFirstTime"         , "length":11  , "type":"time"},
                 { "description":"EventDataSimulation"         , "length":1   , "type":"int"},
-                { "description":"EventDataTrip"               , "length":2   , "type":"bin"},
+                { "description":"EventDataTrip"               , "length":2   , "type":"int"},
                 { "description":"EventDataRouteDirection"     , "length":2   , "type":"int"}
             ]
         }
