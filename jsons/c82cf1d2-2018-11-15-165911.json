@@ -1,0 +1,221 @@
+{
+    "files": {
+        "202D": [], 
+        "202A": [], 
+        "202B": [], 
+        "202C": [], 
+        "2050": [], 
+        "3104": [], 
+        "3100": [], 
+        "3101": [], 
+        "3102": [], 
+        "3F00": [], 
+        "2030": [], 
+        "1015": [], 
+        "2010": [], 
+        "0002": [], 
+        "0003": [], 
+        "2F10": [], 
+        "2f10": [], 
+        "2040": [], 
+        "3115": [], 
+        "3113": [], 
+        "2000": [], 
+        "2001": [], 
+        "2020": [], 
+        "2004": [], 
+        "1004": [], 
+        "1000": []
+    }, 
+    "change-time": "2018-11-15-165911", 
+    "application-data": "6F228408315449432E494341A516BF0C13C70800000000C82CF1D25307060A0102200311", 
+    "description": "scanned", 
+    "application-name": "1TIC.ICA", 
+    "tagid": "c82cf1d2", 
+    "filename": "Card reader", 
+    "application-type": "calypso", 
+    "files_attr": {
+        "202D": {
+            "records": 1, 
+            "nature": "counter", 
+            "type": "EF", 
+            "record_size": 29, 
+            "sfi": 13
+        }, 
+        "202A": {
+            "records": 1, 
+            "nature": "counter", 
+            "type": "EF", 
+            "record_size": 29, 
+            "sfi": 10
+        }, 
+        "202B": {
+            "records": 1, 
+            "nature": "counter", 
+            "type": "EF", 
+            "record_size": 29, 
+            "sfi": 11
+        }, 
+        "202C": {
+            "records": 1, 
+            "nature": "counter", 
+            "type": "EF", 
+            "record_size": 29, 
+            "sfi": 12
+        }, 
+        "2050": {
+            "records": 1, 
+            "nature": "linear", 
+            "type": "EF", 
+            "record_size": 29, 
+            "sfi": 30
+        }, 
+        "3104": {
+            "records": 1, 
+            "nature": "linear", 
+            "type": "EF", 
+            "record_size": 16, 
+            "sfi": 4
+        }, 
+        "3100": {
+            "records": 0, 
+            "nature": "directory", 
+            "type": "DF", 
+            "record_size": 0, 
+            "sfi": 0
+        }, 
+        "3101": {
+            "records": 1, 
+            "nature": "linear", 
+            "type": "EF", 
+            "record_size": 29, 
+            "sfi": 0
+        }, 
+        "3102": {
+            "records": 1, 
+            "nature": "linear", 
+            "type": "EF", 
+            "record_size": 29, 
+            "sfi": 23
+        }, 
+        "3F00": {
+            "records": 0, 
+            "nature": "directory", 
+            "type": "MF", 
+            "record_size": 0, 
+            "sfi": 0
+        }, 
+        "2030": {
+            "records": 4, 
+            "nature": "linear", 
+            "type": "EF", 
+            "record_size": 29, 
+            "sfi": 6
+        }, 
+        "1015": {
+            "records": 3, 
+            "nature": "Unknown (10)", 
+            "type": "EF", 
+            "record_size": 29, 
+            "sfi": 21
+        }, 
+        "2010": {
+            "records": 6, 
+            "nature": "cyclic", 
+            "type": "EF", 
+            "record_size": 29, 
+            "sfi": 8
+        }, 
+        "0002": {
+            "records": 1, 
+            "nature": "linear", 
+            "type": "EF", 
+            "record_size": 29, 
+            "sfi": 2
+        }, 
+        "0003": {
+            "records": 1, 
+            "nature": "linear", 
+            "type": "EF", 
+            "record_size": 29, 
+            "sfi": 3
+        }, 
+        "2F10": {
+            "records": 4, 
+            "nature": "linear", 
+            "type": "EF", 
+            "record_size": 29, 
+            "sfi": 5
+        }, 
+        "2f10": {
+            "records": 4, 
+            "nature": "linear", 
+            "type": "EF", 
+            "record_size": 29, 
+            "sfi": 5
+        }, 
+        "2040": {
+            "records": 3, 
+            "nature": "linear", 
+            "type": "EF", 
+            "record_size": 29, 
+            "sfi": 29
+        }, 
+        "3115": {
+            "records": 1, 
+            "nature": "cyclic", 
+            "type": "EF", 
+            "record_size": 29, 
+            "sfi": 25
+        }, 
+        "3113": {
+            "records": 1, 
+            "nature": "counter", 
+            "type": "EF", 
+            "record_size": 29, 
+            "sfi": 26
+        }, 
+        "2000": {
+            "records": 0, 
+            "nature": "directory", 
+            "type": "DF", 
+            "record_size": 0, 
+            "sfi": 0
+        }, 
+        "2001": {
+            "records": 1, 
+            "nature": "linear", 
+            "type": "EF", 
+            "record_size": 29, 
+            "sfi": 7
+        }, 
+        "2020": {
+            "records": 4, 
+            "nature": "linear", 
+            "type": "EF", 
+            "record_size": 29, 
+            "sfi": 9
+        }, 
+        "2004": {
+            "records": 1, 
+            "nature": "linear", 
+            "type": "EF", 
+            "record_size": 16, 
+            "sfi": 4
+        }, 
+        "1004": {
+            "records": 1, 
+            "nature": "linear", 
+            "type": "EF", 
+            "record_size": 16, 
+            "sfi": 4
+        }, 
+        "1000": {
+            "records": 0, 
+            "nature": "directory", 
+            "type": "DF", 
+            "record_size": 0, 
+            "sfi": 0
+        }
+    }
+}
