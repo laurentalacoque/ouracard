@@ -1,4 +1,6 @@
-*.json
+*.pyc
 *.info
 ./*.xml
 *.swp
+*.infotxt
+*-parsed.txt
