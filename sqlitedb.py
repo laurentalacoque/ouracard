@@ -48,7 +48,37 @@ class ScanDB:
             self.connection.commit()
         slist = self.cursor.execute("SELECT scan_id FROM scans WHERE tag_id = ? AND time = datetime(?)",(tag_id,change_time)).fetchall()
         return slist[0][0]
-    
+    # add_unique("9bcf","contracts",{"contract_num":0,"contract_value":"FF"})
+    def add_contract_(self,scan_id, contract_num, contract_value):
+        # if the contractnum/contractvalue doesn't exist
+        #    - insert it
+        # if it already exists
+        #    - find the existing scan_id change time
+        #       - if existing change_time > current change_time => update existing scan_id to current scan_id
+        contract_id = None
+        clist = self.cursor.execute("SELECT scan_id FROM contracts where contract_num = ? AND contract_value = ?",(contract_num,contract_value)).fetchall()
+        if len(clist) != 0:
+            #a contract with same num and value exists : we might want to change its scan_id so that it points to the oldest one
+            print ("Should modify scan_id")
+            existing_scan_id = clist[0][0]
+            existing_timestamp = self.cursor.execute("SELECT time from scans where scan_id = ?",(existing_scan_id,)).fetchone()
+            current_timestamp  = self.cursor.execute("SELECT time from scans where scan_id = ?",(scan_id,)).fetchone()
+            #
+            if current_timestamp[0] >= existing_timestamp[0]:
+                #existing is older than current
+                print("=> Identical existing record with older timestamp. No change")
+            else:
+                #current timestamp is older than existing => we should update
+                print("=> updating records with same value and more recent timestamps")
+                self.cursor.execute("UPDATE contracts SET scan_id = ? WHERE scan_id = ? AND contract_num = ? AND contract_value = ?",(scan_id,existing_scan_id, contract_num, contract_value))
+                self.connection.commit()
+            import pdb; pdb.set_trace()
+        else:
+            #No contracts exist with this contract_num/contract_value yet
+            self.cursor.execute("INSERT INTO contracts(scan_id, contract_num, contract_value) VALUES (?,?,?)",(scan_id,contract_num, contract_value))
+            rowid = self.cursor.lastrowid
+            self.connection.commit()
+            
     def add_contract(self,scan_id, contract_num, contract_value):
         # if the contractnum/contractvalue doesn't exist
         #    - insert it
