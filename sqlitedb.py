@@ -60,14 +60,19 @@ class ScanDB:
         unicity_values = []
         for key in what.keys():
             where.append("%s = ?"%key)
-            unicity_values.append(what[key])
+            val = what[key]
+            if isinstance(val,str):
+                val = val.lower()
+            unicity_values.append(val)
         where_clause = " AND ".join(where)
         value_clause = tuple(unicity_values)
         print("where %s"%where_clause)
         print value_clause
         
-        existing_request = "SELECT scan_id FROM %s where %s"%(table,where_clause)
+        existing_request = "SELECT scan_id,ROWID FROM %s where %s"%(table,where_clause)
         scanlist = self.cursor.execute(existing_request,value_clause).fetchall()
+
+        table_key = None
 
         #import pdb; pdb.set_trace()
         if len(scanlist) != 0:
@@ -76,6 +81,7 @@ class ScanDB:
                 raise Exception("Error: more than 1 item with same keys in unique insertion")
             #fetch timestamps from scan
             existing_scan_id = scanlist[0][0]
+            table_key = scanlist[0][1]
             existing_timestamp = self.cursor.execute("SELECT time from scans where scan_id = ?",(existing_scan_id,)).fetchone()
             current_timestamp  = self.cursor.execute("SELECT time from scans where scan_id = ?",(scan_id,)).fetchone()
             if current_timestamp[0] >= existing_timestamp[0]:
@@ -102,11 +108,12 @@ class ScanDB:
                 values.append(what[key])
 
             insert_query = "INSERT INTO %s (%s) VALUES (%s)"%(table,",".join(keys),",".join(value_mark))
-            #print (insert_query)
+            print (insert_query)
+            print (values)
             self.cursor.execute(insert_query,tuple(values))
-            self.connection.commit()
-        
-        return        
+            self.connection.commit() 
+            table_key = self.cursor.lastrowid
+        return table_key     
 
 if __name__ == '__main__':
     def byteify(input):
@@ -146,14 +153,25 @@ if __name__ == '__main__':
                         scan_id = db.add_scan(mycard["tagid"],change_time,mycard["description"])
                         #import pdb; pdb.set_trace()
                         bc_id   = db.add_unique(scan_id,"best_contracts",{"best_contract_value":mycard["files"]["2050"][0]})
-                        for i,val in mycard["files"]["2020"]:
+                        for i,val in enumerate(mycard["files"]["2020"]):
+                            val = val.lower()
                             contract_num = i+1
                             cid = db.add_unique(scan_id,"contracts",{"contract_num":contract_num,"contract_value":val,"best_contract_id":bc_id})
-                        for i,val in mycard["files"]["2030"]:
+                        for i,val in enumerate(mycard["files"]["2030"]):
+                            val = val.lower()
                             contract_num = i+5
                             cid = db.add_unique(scan_id,"contracts",{"contract_num":contract_num,"contract_value":val,"best_contract_id":bc_id})
+                        for i,cnum in enumerate(["202a","202b","202c","202d"]):
+                            val = val.lower()
+                            counter_num = i+1
+                            counter = mycard["files"].get(cnum)
+                            if counter is None:
+                                counter = mycard["files"].get(cnum.upper())
+                            val = counter[0]
+                            cid = db.add_unique(scan_id,"counters",{"counter_num":counter_num,"counter_value":val,"best_contract_id":bc_id})
                     except:
                         import traceback; traceback.print_exc()
+                        import pdb; pdb.set_trace()
             except:
                 import traceback
                 traceback.print_exc()
