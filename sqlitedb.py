@@ -9,13 +9,41 @@ class ScanDB:
     def _create(self):
         self.cursor.execute("CREATE TABLE tags  (tag_id TEXT PRIMARY KEY, atr TEXT)")
         self.cursor.execute("CREATE TABLE scans (scan_id INTEGER PRIMARY KEY AUTOINCREMENT, tag_id TEXT NOT NULL, time TEXT NOT NULL, description TEXT, FOREIGN KEY(tag_id) REFERENCES tags(tag_id))")
-        self.cursor.execute("CREATE TABLE contracts (contract_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL, best_contract_id INTEGER NOT NULL, contract_num TEXT, contract_value TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
-        self.cursor.execute("CREATE TABLE counters (counter_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL,  best_contract_id INTEGER NOT NULL, counter_num TEXT, counter_value TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
+        self.cursor.execute("CREATE TABLE contracts (contract_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL,  contract_num TEXT, contract_value TEXT, tariff_type TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
+        self.cursor.execute("CREATE TABLE counters (counter_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL,  best_contract_id INTEGER NOT NULL, counter_num TEXT, counter_value TEXT, tariff_type TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
         self.cursor.execute("CREATE TABLE events (event_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL, event_value TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
         self.cursor.execute("CREATE TABLE best_contracts (best_contract_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL, best_contract_value TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
         self.cursor.execute("CREATE TABLE environments (environment_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL, environment_value TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
         self.cursor.execute("CREATE TABLE events (event_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL, event_value TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
     
+    def parse_bc_schema(self,hexstring):
+        hexstring="1"+hexstring
+        binstring = bin(int(hexstring,16))[3:]
+        count = int(binstring[0:4],2)
+        binstring = binstring[4:]
+        tariff_list = {}
+        for cn in range(count):
+            bitmap = binstring[0:3]
+            binstring = binstring[3:]
+            offset = 0
+            tarifftype = None
+            pointer    = None
+            if bitmap[2] == '1': 
+                binstring = binstring[24:] # networkid
+            if bitmap[1] == '1': 
+                #tariff
+                tarifftype = int(binstring[offset+4:offset+offset+12],2)
+                binstring = binstring[16:]
+            if bitmap[0] == '1':
+                pointer = int(binstring[offset:offset+5],2);
+                binstring = binstring[5:]
+            if tarifftype is not None and pointer is not None:
+                tariff_list[pointer]="%02x"%tarifftype
+                print("Found tariff type %x --> %d"%(tarifftype,pointer))
+            else :
+                 print("Error parsing tariff")    
+        return tariff_list
+
     def add_card(self,tagid,atr=None):
         #verify
         clist = self.cursor.execute("SELECT tag_id, atr FROM tags WHERE tag_id = lower(?)",(tagid,)).fetchall()
@@ -61,8 +89,10 @@ class ScanDB:
         where = []
         unicity_values = []
         for key in what.keys():
-            where.append("%s = ?"%key)
             val = what[key]
+            if val is None:
+                continue
+            where.append("%s = ?"%key)
             if isinstance(val,str):
                 val = val.lower()
             unicity_values.append(val)
@@ -105,6 +135,8 @@ class ScanDB:
             values = [scan_id]
             value_mark = ["?"]
             for key in what.keys():
+                if what[key] is None:
+                    continue
                 keys.append(key)
                 value_mark.append("?")
                 values.append(what[key])
@@ -154,15 +186,19 @@ if __name__ == '__main__':
                     try:
                         scan_id = db.add_scan(mycard["tagid"],change_time,mycard["description"])
                         #import pdb; pdb.set_trace()
+                        best_contract_value = mycard["files"]["2050"][0]
+                        best_contracts = db.parse_bc_schema(best_contract_value)
                         bc_id   = db.add_unique(scan_id,"best_contracts",{"best_contract_value":mycard["files"]["2050"][0]})
                         for i,val in enumerate(mycard["files"]["2020"]):
                             val = val.lower()
                             contract_num = i+1
-                            cid = db.add_unique(scan_id,"contracts",{"contract_num":contract_num,"contract_value":val,"best_contract_id":bc_id})
+                            what = {"contract_num":contract_num, "contract_value":val , "tariff_type":best_contracts.get(contract_num)}
+                            cid = db.add_unique(scan_id,"contracts",what)
                         for i,val in enumerate(mycard["files"]["2030"]):
                             val = val.lower()
                             contract_num = i+5
-                            cid = db.add_unique(scan_id,"contracts",{"contract_num":contract_num,"contract_value":val,"best_contract_id":bc_id})
+                            what = {"contract_num":contract_num, "contract_value":val , "tariff_type":best_contracts.get(contract_num)}
+                            cid = db.add_unique(scan_id,"contracts",what)
                         for i,cnum in enumerate(["202a","202b","202c","202d"]):
                             val = val.lower()
                             counter_num = i+1
