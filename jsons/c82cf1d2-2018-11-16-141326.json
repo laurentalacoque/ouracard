@@ -18,6 +18,12 @@
         "3104": [
             "324D50502E4943410000000000000000"
         ], 
+        "2030": [
+            "EE4C04004FE34713BCA0FDE00A380200F26007D1300000000000000000", 
+            "0000000000000000000000000000000000000000000000000000000000", 
+            "0000000000000000000000000000000000000000000000000000000000", 
+            "0000000000000000000000000000000000000000000000000000000000"
+        ], 
         "3115": [
             "0000000000000000000000000000000000000000000000000000000000"
         ], 
@@ -31,11 +37,16 @@
         "3102": [
             "0000000000000000000000000000000000000000000000000000000000"
         ], 
+        "2010": [
+            "7CD4F8D04248A0B0187DA002E0D7C00956F9A9D2400000000000000000", 
+            "7CD4E9500248A10931B9A13920FFE96C74880000000000000000000000", 
+            "7CD20F504248A1313190A139204308016D051000000000000000000000", 
+            "7CD20A504248A088187D9802E0D7B80156F9A414000000000000000000", 
+            "7CD0FBD04248A0B0187DA002E0D7C00956F9A1D2400000000000000000", 
+            "7CD0E9500248A10931B9A13920FFE96C74880000000000000000000000"
+        ], 
         "202b": [
             "0000010000000000000000000001000000000000000000000000000000"
-        ], 
-        "2001": [
-            "243928281134C8F848CBA04088EEE6DD402C8010000000000000000000"
         ], 
         "2020": [
             "CE520BB851F5894200DC3E2BFE00520000000085040000000000000000", 
@@ -57,25 +68,14 @@
             "0000000000000000000000000000000000000000000000000000000000", 
             "0000000000000000000000000000000000000000000000000000000000"
         ], 
-        "2050": [
-            "3DE4105DE4121C6A122000000000000000000000000000000000000000"
-        ], 
         "1004": [
             "304554502E4943410000000000000000"
         ], 
-        "2010": [
-            "7CD4F8D04248A0B0187DA002E0D7C00956F9A9D2400000000000000000", 
-            "7CD4E9500248A10931B9A13920FFE96C74880000000000000000000000", 
-            "7CD20F504248A1313190A139204308016D051000000000000000000000", 
-            "7CD20A504248A088187D9802E0D7B80156F9A414000000000000000000", 
-            "7CD0FBD04248A0B0187DA002E0D7C00956F9A1D2400000000000000000", 
-            "7CD0E9500248A10931B9A13920FFE96C74880000000000000000000000"
+        "2050": [
+            "3DE4105DE4121C6A122000000000000000000000000000000000000000"
         ], 
-        "2030": [
-            "EE4C04004FE34713BCA0FDE00A380200F26007D1300000000000000000", 
-            "0000000000000000000000000000000000000000000000000000000000", 
-            "0000000000000000000000000000000000000000000000000000000000", 
-            "0000000000000000000000000000000000000000000000000000000000"
+        "2001": [
+            "243928281134C8F848CBA04088EEE6DD402C8010000000000000000000"
         ]
     }, 
     "change-time": "2018-11-16-141326", 
@@ -88,178 +88,178 @@
     "files_attr": {
         "3f00": {
             "records": 0, 
-            "nature": "directory", 
+            "sfi": 0, 
             "type": "MF", 
             "record_size": 0, 
-            "sfi": 0
+            "nature": "directory"
         }, 
         "202d": {
             "records": 1, 
-            "nature": "counter", 
+            "sfi": 13, 
             "type": "EF", 
             "record_size": 29, 
-            "sfi": 13
+            "nature": "counter"
         }, 
         "2050": {
             "records": 1, 
-            "nature": "linear", 
+            "sfi": 30, 
             "type": "EF", 
             "record_size": 29, 
-            "sfi": 30
+            "nature": "linear"
         }, 
         "202a": {
             "records": 1, 
-            "nature": "counter", 
+            "sfi": 10, 
             "type": "EF", 
             "record_size": 29, 
-            "sfi": 10
+            "nature": "counter"
         }, 
         "202b": {
             "records": 1, 
-            "nature": "counter", 
+            "sfi": 11, 
             "type": "EF", 
             "record_size": 29, 
-            "sfi": 11
+            "nature": "counter"
         }, 
         "202c": {
             "records": 1, 
-            "nature": "counter", 
+            "sfi": 12, 
             "type": "EF", 
             "record_size": 29, 
-            "sfi": 12
+            "nature": "counter"
         }, 
         "3104": {
             "records": 1, 
-            "nature": "linear", 
+            "sfi": 4, 
             "type": "EF", 
             "record_size": 16, 
-            "sfi": 4
+            "nature": "linear"
         }, 
         "3100": {
             "records": 0, 
-            "nature": "directory", 
+            "sfi": 0, 
             "type": "DF", 
             "record_size": 0, 
-            "sfi": 0
+            "nature": "directory"
         }, 
         "3101": {
             "records": 1, 
-            "nature": "linear", 
+            "sfi": 0, 
             "type": "EF", 
             "record_size": 29, 
-            "sfi": 0
+            "nature": "linear"
         }, 
         "3102": {
             "records": 1, 
-            "nature": "linear", 
+            "sfi": 23, 
             "type": "EF", 
             "record_size": 29, 
-            "sfi": 23
+            "nature": "linear"
         }, 
         "2030": {
             "records": 4, 
-            "nature": "linear", 
+            "sfi": 6, 
             "type": "EF", 
             "record_size": 29, 
-            "sfi": 6
+            "nature": "linear"
         }, 
         "1015": {
             "records": 3, 
-            "nature": "Unknown (10)", 
+            "sfi": 21, 
             "type": "EF", 
             "record_size": 29, 
-            "sfi": 21
+            "nature": "Unknown (10)"
         }, 
         "2010": {
             "records": 6, 
-            "nature": "cyclic", 
+            "sfi": 8, 
             "type": "EF", 
             "record_size": 29, 
-            "sfi": 8
+            "nature": "cyclic"
         }, 
         "0002": {
             "records": 1, 
-            "nature": "linear", 
+            "sfi": 2, 
             "type": "EF", 
             "record_size": 29, 
-            "sfi": 2
+            "nature": "linear"
         }, 
         "0003": {
             "records": 1, 
-            "nature": "linear", 
+            "sfi": 3, 
             "type": "EF", 
             "record_size": 29, 
-            "sfi": 3
+            "nature": "linear"
         }, 
         "2f10": {
             "records": 4, 
-            "nature": "linear", 
+            "sfi": 5, 
             "type": "EF", 
             "record_size": 29, 
-            "sfi": 5
+            "nature": "linear"
         }, 
         "2040": {
             "records": 3, 
-            "nature": "linear", 
+            "sfi": 29, 
             "type": "EF", 
             "record_size": 29, 
-            "sfi": 29
+            "nature": "linear"
         }, 
         "3115": {
             "records": 1, 
-            "nature": "cyclic", 
+            "sfi": 25, 
             "type": "EF", 
             "record_size": 29, 
-            "sfi": 25
+            "nature": "cyclic"
         }, 
         "3113": {
             "records": 1, 
-            "nature": "counter", 
+            "sfi": 26, 
             "type": "EF", 
             "record_size": 29, 
-            "sfi": 26
+            "nature": "counter"
         }, 
         "2000": {
             "records": 0, 
-            "nature": "directory", 
+            "sfi": 0, 
             "type": "DF", 
             "record_size": 0, 
-            "sfi": 0
+            "nature": "directory"
         }, 
         "2001": {
             "records": 1, 
-            "nature": "linear", 
+            "sfi": 7, 
             "type": "EF", 
             "record_size": 29, 
-            "sfi": 7
+            "nature": "linear"
         }, 
         "2020": {
             "records": 4, 
-            "nature": "linear", 
+            "sfi": 9, 
             "type": "EF", 
             "record_size": 29, 
-            "sfi": 9
+            "nature": "linear"
         }, 
         "2004": {
             "records": 1, 
-            "nature": "linear", 
+            "sfi": 4, 
             "type": "EF", 
             "record_size": 16, 
-            "sfi": 4
+            "nature": "linear"
         }, 
         "1004": {
             "records": 1, 
-            "nature": "linear", 
+            "sfi": 4, 
             "type": "EF", 
             "record_size": 16, 
-            "sfi": 4
+            "nature": "linear"
         }, 
         "1000": {
             "records": 0, 
-            "nature": "directory", 
+            "sfi": 0, 
             "type": "DF", 
             "record_size": 0, 
-            "sfi": 0
+            "nature": "directory"
         }
     }
 }
