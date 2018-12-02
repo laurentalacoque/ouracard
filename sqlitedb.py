@@ -13,6 +13,8 @@ class ScanDB:
         self.cursor.execute("CREATE TABLE counters (counter_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL,  best_contract_id INTEGER NOT NULL, counter_num TEXT, counter_value TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
         self.cursor.execute("CREATE TABLE events (event_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL, event_value TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
         self.cursor.execute("CREATE TABLE best_contracts (best_contract_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL, best_contract_value TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
+        self.cursor.execute("CREATE TABLE environments (environment_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL, environment_value TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
+        self.cursor.execute("CREATE TABLE events (event_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL, event_value TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
     
     def add_card(self,tagid,atr=None):
         #verify
@@ -169,6 +171,10 @@ if __name__ == '__main__':
                                 counter = mycard["files"].get(cnum.upper())
                             val = counter[0]
                             cid = db.add_unique(scan_id,"counters",{"counter_num":counter_num,"counter_value":val,"best_contract_id":bc_id})
+                        for i,val in enumerate(mycard["files"]["2010"]):
+                            val = val.lower()
+                            cid = db.add_unique(scan_id,"events",{"event_value":val})
+                        eid = db.add_unique(scan_id,"environments",{"environment_value":mycard["files"]["2001"][0]})
                     except:
                         import traceback; traceback.print_exc()
                         import pdb; pdb.set_trace()
