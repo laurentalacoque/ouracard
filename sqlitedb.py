@@ -9,8 +9,8 @@ class ScanDB:
     def _create(self):
         self.cursor.execute("CREATE TABLE tags  (tag_id TEXT PRIMARY KEY, atr TEXT)")
         self.cursor.execute("CREATE TABLE scans (scan_id INTEGER PRIMARY KEY AUTOINCREMENT, tag_id TEXT NOT NULL, time TEXT NOT NULL, description TEXT, FOREIGN KEY(tag_id) REFERENCES tags(tag_id))")
-        self.cursor.execute("CREATE TABLE contracts (contract_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL, contract_num TEXT, contract_value TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
-        self.cursor.execute("CREATE TABLE counters (counter_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL, counter_num TEXT, counter_value TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
+        self.cursor.execute("CREATE TABLE contracts (contract_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL, best_contract_id INTEGER NOT NULL, contract_num TEXT, contract_value TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
+        self.cursor.execute("CREATE TABLE counters (counter_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL,  best_contract_id INTEGER NOT NULL, counter_num TEXT, counter_value TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
         self.cursor.execute("CREATE TABLE events (event_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL, event_value TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
         self.cursor.execute("CREATE TABLE best_contracts (best_contract_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL, best_contract_value TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
     
@@ -48,92 +48,113 @@ class ScanDB:
             self.connection.commit()
         slist = self.cursor.execute("SELECT scan_id FROM scans WHERE tag_id = ? AND time = datetime(?)",(tag_id,change_time)).fetchall()
         return slist[0][0]
-    # add_unique("9bcf","contracts",{"contract_num":0,"contract_value":"FF"})
-    def add_contract_(self,scan_id, contract_num, contract_value):
-        # if the contractnum/contractvalue doesn't exist
-        #    - insert it
+
+    # add_unique(3,"contracts",{"contract_num":0,"contract_value":"FF"})
+    def add_unique(self,scan_id, table, what):
+        # if the unicity keys doesn't exist
+        #    - insert new line
         # if it already exists
-        #    - find the existing scan_id change time
+        #    - find the existing scan_id change time wrt the unicity keys/values
         #       - if existing change_time > current change_time => update existing scan_id to current scan_id
-        contract_id = None
-        clist = self.cursor.execute("SELECT scan_id FROM contracts where contract_num = ? AND contract_value = ?",(contract_num,contract_value)).fetchall()
-        if len(clist) != 0:
-            #a contract with same num and value exists : we might want to change its scan_id so that it points to the oldest one
-            print ("Should modify scan_id")
-            existing_scan_id = clist[0][0]
+        where = []
+        unicity_values = []
+        for key in what.keys():
+            where.append("%s = ?"%key)
+            unicity_values.append(what[key])
+        where_clause = " AND ".join(where)
+        value_clause = tuple(unicity_values)
+        print("where %s"%where_clause)
+        print value_clause
+        
+        existing_request = "SELECT scan_id FROM %s where %s"%(table,where_clause)
+        scanlist = self.cursor.execute(existing_request,value_clause).fetchall()
+
+        #import pdb; pdb.set_trace()
+        if len(scanlist) != 0:
+            #there are other items with same values: we should change their scan_id so that it points to the oldest one
+            if len(scanlist) > 1:
+                raise Exception("Error: more than 1 item with same keys in unique insertion")
+            #fetch timestamps from scan
+            existing_scan_id = scanlist[0][0]
             existing_timestamp = self.cursor.execute("SELECT time from scans where scan_id = ?",(existing_scan_id,)).fetchone()
             current_timestamp  = self.cursor.execute("SELECT time from scans where scan_id = ?",(scan_id,)).fetchone()
-            #
             if current_timestamp[0] >= existing_timestamp[0]:
                 #existing is older than current
-                print("=> Identical existing record with older timestamp. No change")
+                #print("=> Identical existing record with older timestamp. No change")
+                pass
             else:
                 #current timestamp is older than existing => we should update
-                print("=> updating records with same value and more recent timestamps")
-                self.cursor.execute("UPDATE contracts SET scan_id = ? WHERE scan_id = ? AND contract_num = ? AND contract_value = ?",(scan_id,existing_scan_id, contract_num, contract_value))
+                #print("=> updating records with same value and more recent timestamps")
+                update_request = "UPDATE %s SET scan_id = ? WHERE scan_id = ? AND %s"%(table,where_clause)    
+                unicity_values.insert(0,existing_scan_id) #pos 1
+                unicity_values.insert(0,scan_id) #pos 0
+                #print(update_request)
+                self.cursor.execute(update_request,tuple(unicity_values))
                 self.connection.commit()
-            import pdb; pdb.set_trace()
         else:
-            #No contracts exist with this contract_num/contract_value yet
-            self.cursor.execute("INSERT INTO contracts(scan_id, contract_num, contract_value) VALUES (?,?,?)",(scan_id,contract_num, contract_value))
-            rowid = self.cursor.lastrowid
+            #no item exist yet
+            keys = ['scan_id']
+            values = [scan_id]
+            value_mark = ["?"]
+            for key in what.keys():
+                keys.append(key)
+                value_mark.append("?")
+                values.append(what[key])
+
+            insert_query = "INSERT INTO %s (%s) VALUES (%s)"%(table,",".join(keys),",".join(value_mark))
+            #print (insert_query)
+            self.cursor.execute(insert_query,tuple(values))
             self.connection.commit()
-            
-    def add_contract(self,scan_id, contract_num, contract_value):
-        # if the contractnum/contractvalue doesn't exist
-        #    - insert it
-        # if it already exists
-        #    - find the existing scan_id change time
-        #       - if existing change_time > current change_time => update existing scan_id to current scan_id
-        contract_id = None
-        clist = self.cursor.execute("SELECT scan_id FROM contracts where contract_num = ? AND contract_value = ?",(contract_num,contract_value)).fetchall()
-        if len(clist) != 0:
-            #a contract with same num and value exists : we might want to change its scan_id so that it points to the oldest one
-            print ("Should modify scan_id")
-            existing_scan_id = clist[0][0]
-            existing_timestamp = self.cursor.execute("SELECT time from scans where scan_id = ?",(existing_scan_id,)).fetchone()
-            current_timestamp  = self.cursor.execute("SELECT time from scans where scan_id = ?",(scan_id,)).fetchone()
-            #
-            if current_timestamp[0] >= existing_timestamp[0]:
-                #existing is older than current
-                print("=> Identical existing record with older timestamp. No change")
-            else:
-                #current timestamp is older than existing => we should update
-                print("=> updating records with same value and more recent timestamps")
-                self.cursor.execute("UPDATE contracts SET scan_id = ? WHERE scan_id = ? AND contract_num = ? AND contract_value = ?",(scan_id,existing_scan_id, contract_num, contract_value))
-                self.connection.commit()
-            import pdb; pdb.set_trace()
+        
+        return        
+
+if __name__ == '__main__':
+    def byteify(input):
+        if isinstance(input, dict):
+            return {byteify(key): byteify(value)
+                    for key, value in input.iteritems()}
+        elif isinstance(input, list):
+            return [byteify(element) for element in input]
+        elif isinstance(input, unicode):
+            return input.encode('utf-8')
         else:
-            #No contracts exist with this contract_num/contract_value yet
-            self.cursor.execute("INSERT INTO contracts(scan_id, contract_num, contract_value) VALUES (?,?,?)",(scan_id,contract_num, contract_value))
-            rowid = self.cursor.lastrowid
-            self.connection.commit()
+            return input
 
-db = ScanDB('scan.db')
-try:
-    db._create()
-except:
-    pass
-scan_id1=db.add_scan('9BCF','2018-12-12',"jey!")
-scan_id2=db.add_scan('9BCF','2018-12-14',"Bou")
-#scan_id3=db.add_scan('9BCF','2018-12-14',"Bou")
-scan_id3=db.add_scan('ffff','2018-12-14',"Bju")
-scan_id4=db.add_scan('9bcf','2018-12-10',"grr")
-
-#db.add_scan('9BCF','2018-12-12',"Duplicate")
-
-print("insert")
-db.add_contract(scan_id1,0,"FF")
-
-
-print("insert same value, diff scan")
-db.add_contract(scan_id2,0,"FF")
-
-print("insert other value, diff scan")
-db.add_contract(scan_id3,0,"FA")
-
-print("insert older scan with same value")
-db.add_contract(scan_id4,0,"FF")
-
-
-
+    import argparse
+    parser = argparse.ArgumentParser()
+    args = parser.parse_args()
+    import os
+    db = ScanDB('scan.db')
+    try:
+        db._create()
+    except:
+        pass
+    for myfile in os.listdir("."):
+        if myfile.endswith(".json"):
+            try:
+                print(myfile)
+                with open(myfile,'r') as f:
+                    jsonfile = f.read()
+                    import json
+                    mycard = json.loads(jsonfile)
+                    mycard = byteify(mycard)
+                    change_time = mycard["change-time"]
+                    import time
+                    t=time.strptime(change_time,"%Y-%m-%d-%H%M%S")
+                    change_time = time.strftime("%Y-%m-%d %H:%M:%S",t)
+                    try:
+                        scan_id = db.add_scan(mycard["tagid"],change_time,mycard["description"])
+                        #import pdb; pdb.set_trace()
+                        bc_id   = db.add_unique(scan_id,"best_contracts",{"best_contract_value":mycard["files"]["2050"][0]})
+                        for i,val in mycard["files"]["2020"]:
+                            contract_num = i+1
+                            cid = db.add_unique(scan_id,"contracts",{"contract_num":contract_num,"contract_value":val,"best_contract_id":bc_id})
+                        for i,val in mycard["files"]["2030"]:
+                            contract_num = i+5
+                            cid = db.add_unique(scan_id,"contracts",{"contract_num":contract_num,"contract_value":val,"best_contract_id":bc_id})
+                    except:
+                        import traceback; traceback.print_exc()
+            except:
+                import traceback
+                traceback.print_exc()
+                print("\tskipped\n")
