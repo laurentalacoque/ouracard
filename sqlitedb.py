@@ -9,10 +9,10 @@ class ScanDB:
     def _create(self):
         self.cursor.execute("CREATE TABLE IF NOT EXISTS tags  (tag_id TEXT PRIMARY KEY, atr TEXT)")
         self.cursor.execute("CREATE TABLE IF NOT EXISTS scans (scan_id INTEGER PRIMARY KEY AUTOINCREMENT, tag_id TEXT NOT NULL, time TEXT NOT NULL, description TEXT, FOREIGN KEY(tag_id) REFERENCES tags(tag_id))")
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS contracts (contract_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL,  contract_num TEXT, contract_value TEXT, tariff_type TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS counters (counter_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL,  counter_num TEXT, counter_value TEXT, tariff_type TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS events (event_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL, event_value TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
         self.cursor.execute("CREATE TABLE IF NOT EXISTS best_contracts (best_contract_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL, best_contract_value TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS contracts (contract_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL,  contract_num TEXT, contract_value TEXT, tariff_type TEXT, best_contract_id INTEGER, FOREIGN KEY(scan_id) REFERENCES scans(scan_id),FOREIGN KEY(best_contract_id) REFERENCES best_contracts(best_contract_id))")
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS counters (counter_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL,  counter_num TEXT, counter_value TEXT, tariff_type TEXT, best_contract_id INTEGER, FOREIGN KEY(scan_id) REFERENCES scans(scan_id),FOREIGN KEY(best_contract_id) REFERENCES best_contracts(best_contract_id))")
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS events (event_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL, event_value TEXT, event_special INTEGER DEFAULT 0, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
         self.cursor.execute("CREATE TABLE IF NOT EXISTS environments (environment_id INTEGER PRIMARY KEY AUTOINCREMENT, scan_id INTEGER NOT NULL, environment_value TEXT, FOREIGN KEY(scan_id) REFERENCES scans(scan_id))")
     
     def parse_bc_schema(self,hexstring):
@@ -197,77 +197,8 @@ class ScanDB:
             table_key = self.cursor.lastrowid
         return table_key     
         
-# add_unique(3,"contracts",{"contract_num":0,"contract_value":"FF"})
-    def add_unique_old(self,scan_id, table, what):
-        # if the unicity keys doesn't exist
-        #    - insert new line
-        # if it already exists
-        #    - find the existing scan_id change time wrt the unicity keys/values
-        #       - if existing change_time > current change_time => update existing scan_id to current scan_id
-        where = []
-        unicity_values = []
-        for key in what.keys():
-            val = what[key]
-            if val is None:
-                where.append("%s is null"%key)
-            else:
-                where.append("%s = ?"%key)
-                if isinstance(val,str):
-                    val = val.lower()
-                unicity_values.append(val)
-        where_clause = " AND ".join(where)
-        value_clause = tuple(unicity_values)
-        #print("where %s"%where_clause)
-        #print value_clause
+
         
-        #todo : add tag_id in the selection
-        existing_request = "SELECT scan_id,ROWID FROM %s where %s"%(table,where_clause)
-        scanlist = self.cursor.execute(existing_request,value_clause).fetchall()
-
-        table_key = None
-
-        #import pdb; pdb.set_trace()
-        if len(scanlist) != 0:
-            #there are other items with same values: we should change their scan_id so that it points to the oldest one
-            if len(scanlist) > 1:
-                raise Exception("Error: more than 1 item with same keys in unique insertion")
-            #fetch timestamps from scan
-            existing_scan_id = scanlist[0][0]
-            table_key = scanlist[0][1]
-            existing_timestamp = self.cursor.execute("SELECT time from scans where scan_id = ?",(existing_scan_id,)).fetchone()
-            current_timestamp  = self.cursor.execute("SELECT time from scans where scan_id = ?",(scan_id,)).fetchone()
-            if current_timestamp[0] >= existing_timestamp[0]:
-                #existing is older than current
-                #print("=> Identical existing record with older timestamp. No change")
-                pass
-            else:
-                #current timestamp is older than existing => we should update
-                #print("=> updating records with same value and more recent timestamps")
-                update_request = "UPDATE %s SET scan_id = ? WHERE scan_id = ? AND %s"%(table,where_clause)    
-                unicity_values.insert(0,existing_scan_id) #pos 1
-                unicity_values.insert(0,scan_id) #pos 0
-                #print(update_request)
-                self.cursor.execute(update_request,tuple(unicity_values))
-                self.connection.commit()
-        else:
-            #no item exist yet
-            keys = ['scan_id']
-            values = [scan_id]
-            value_mark = ["?"]
-            for key in what.keys():
-                if what[key] is None:
-                    continue
-                keys.append(key)
-                value_mark.append("?")
-                values.append(what[key])
-
-            insert_query = "INSERT INTO %s (%s) VALUES (%s)"%(table,",".join(keys),",".join(value_mark))
-            print (insert_query)
-            print (values)
-            self.cursor.execute(insert_query,tuple(values))
-            self.connection.commit() 
-            table_key = self.cursor.lastrowid
-        return table_key     
 if __name__ == '__main__':
     def byteify(input):
         if isinstance(input, dict):
@@ -312,12 +243,12 @@ if __name__ == '__main__':
                         for i,val in enumerate(mycard["files"]["2020"]):
                             val = val.lower()
                             contract_num = i+1
-                            what = {"contract_num":contract_num, "contract_value":val , "tariff_type":best_contracts.get(contract_num)}
+                            what = {"contract_num":contract_num, "contract_value":val , "tariff_type":best_contracts.get(contract_num),"best_contract_id":bc_id}
                             cid = db.add_unique(scan_id,tag_id,"contracts",what)
                         for i,val in enumerate(mycard["files"]["2030"]):
                             val = val.lower()
                             contract_num = i+5
-                            what = {"contract_num":contract_num, "contract_value":val , "tariff_type":best_contracts.get(contract_num)}
+                            what = {"contract_num":contract_num, "contract_value":val , "tariff_type":best_contracts.get(contract_num), "best_contract_id":bc_id}
                             cid = db.add_unique(scan_id,tag_id,"contracts",what)
                         for i,cnum in enumerate(["202a","202b","202c","202d"]):
                             val = val.lower()
@@ -326,10 +257,13 @@ if __name__ == '__main__':
                             if counter is None:
                                 counter = mycard["files"].get(cnum.upper())
                             val = counter[0]
-                            cid = db.add_unique(scan_id,tag_id,"counters",{"counter_num":counter_num,"counter_value":val,"tariff_type":best_contracts.get(contract_num)})
+                            cid = db.add_unique(scan_id,tag_id,"counters",{"counter_num":counter_num,"counter_value":val,"tariff_type":best_contracts.get(contract_num),"best_contract_id":bc_id})
                         for i,val in enumerate(mycard["files"]["2010"]):
                             val = val.lower()
-                            cid = db.add_unique(scan_id,tag_id,"events",{"event_value":val})
+                            cid = db.add_unique(scan_id,tag_id,"events",{"event_value":val,"event_special":0})
+                        for i,val in enumerate(mycard["files"]["2040"]):
+                            val = val.lower()
+                            cid = db.add_unique(scan_id,tag_id,"events",{"event_value":val,"event_special":1})
                         eid = db.add_unique(scan_id,tag_id,"environments",{"environment_value":mycard["files"]["2001"][0]})
                     except:
                         import traceback; traceback.print_exc()
